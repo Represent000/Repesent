@@ -1,0 +1,946 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>循证康复资源库 · 原型</title>
+<style>
+:root{
+  --brand:#0d9488; --brand-deep:#0f766e; --brand-soft:#e6f7f5;
+  --bg:#f6f8f9; --surface:#ffffff; --text:#1a2b31; --text-muted:#5b6b70;
+  --border:#e3e8ea; --line:#eef1f3;
+  --a:#16a34a; --b:#2563eb; --c:#d97706; --d:#8a9196;
+  --strong:#16a34a; --weak:#2563eb; --suggest:#d97706; --against:#dc2626; --none:#8a9196;
+  --cat-exercise:#16a34a; --cat-agent:#0284c7; --cat-manual:#7c3aed; --cat-drug:#d97706; --cat-surgery:#dc2626; --cat-edu:#0d9488;
+  --radius:14px; --shadow:0 1px 2px rgba(16,42,50,.05),0 6px 24px rgba(16,42,50,.06);
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;font-family:"PingFang SC","Microsoft YaHei","SF Pro Text",system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.6}
+a{color:var(--brand);text-decoration:none}
+a:hover{text-decoration:underline}
+
+header{position:sticky;top:0;z-index:40;background:rgba(255,255,255,.92);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+.head-inner{max-width:1080px;margin:0 auto;padding:14px 20px;display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.logo{display:flex;align-items:center;gap:10px;font-weight:700;font-size:18px;cursor:pointer;flex-shrink:0}
+.logo .dot{width:34px;height:34px;border-radius:10px;background:linear-gradient(135deg,#0d9488,#14b8a6);display:grid;place-items:center;color:#fff;font-size:18px}
+.logo small{display:block;font-size:11px;font-weight:400;color:var(--text-muted);line-height:1.1}
+.search-wrap{position:relative;flex:1;min-width:220px;max-width:560px}
+.search-wrap input{width:100%;padding:11px 15px;border:1px solid var(--border);border-radius:12px;font-size:14px;background:#fff;outline:none;transition:border .15s}
+.search-wrap input:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(13,148,136,.12)}
+.suggest{position:absolute;top:calc(100% + 6px);left:0;right:0;background:#fff;border:1px solid var(--border);border-radius:12px;box-shadow:var(--shadow);overflow:hidden;display:none;z-index:50}
+.suggest.open{display:block}
+.suggest .s-it{display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;border-bottom:1px solid var(--line)}
+.suggest .s-it:last-child{border-bottom:0}
+.suggest .s-it:hover,.suggest .s-it.sel{background:var(--brand-soft)}
+.suggest .kw{font-size:12px;color:var(--text-muted);margin-left:auto;flex-shrink:0}
+.suggest .em{color:var(--brand);font-weight:600}
+nav{display:flex;gap:6px;margin-left:auto;align-items:center;flex-wrap:wrap}
+nav button{border:none;background:transparent;color:var(--text-muted);font-size:13px;padding:8px 12px;border-radius:9px;cursor:pointer}
+nav button:hover{background:#eef6f5;color:var(--brand-deep)}
+.legend-btn{border:1px solid var(--border)!important;background:#fff!important}
+
+main{max-width:1080px;margin:0 auto;padding:26px 20px 60px}
+#home .hero{background:linear-gradient(135deg,#0f766e,#0d9488 55%,#14b8a6);color:#fff;border-radius:18px;padding:34px 32px;margin-bottom:26px}
+#home .hero h1{margin:0 0 8px;font-size:26px}
+#home .hero p{margin:0;opacity:.92;font-size:14px;max-width:640px}
+.hero .pill-row{margin-top:16px;display:flex;gap:8px;flex-wrap:wrap}
+.hero .pill{background:rgba(255,255,255,.16);border:1px solid rgba(255,255,255,.25);padding:5px 12px;border-radius:999px;font-size:12px}
+
+.section-title{display:flex;align-items:baseline;gap:10px;margin:26px 0 14px}
+.section-title h2{margin:0;font-size:17px}
+.section-title span{color:var(--text-muted);font-size:13px}
+
+.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+.disease-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px;cursor:pointer;transition:box-shadow .15s,transform .15s;display:flex;flex-direction:column;box-shadow:var(--shadow)}
+.disease-card:hover{box-shadow:0 10px 30px rgba(13,148,136,.14);transform:translateY(-2px)}
+.dc-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px}
+.dc-head h3{margin:0;font-size:17px}
+.state-dot{width:10px;height:10px;border-radius:50%;background:var(--a);box-shadow:0 0 0 3px rgba(22,163,74,.18)}
+.dc-sub{color:var(--text-muted);font-size:13px;margin-bottom:12px}
+.aliases{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:14px}
+.alias{font-size:11px;color:var(--text-muted);background:var(--line);padding:2px 8px;border-radius:6px}
+.dc-stats{display:flex;gap:8px;margin-top:auto}
+.stat{flex:1;background:var(--brand-soft);border-radius:9px;padding:8px 10px;font-size:11px;color:var(--brand-deep);text-align:center}
+.stat b{display:block;font-size:14px}
+.dc-go{margin-top:14px;font-size:13px;color:var(--brand);font-weight:500}
+
+/* detail */
+#detail{display:none}
+.detail-head{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:22px 24px;box-shadow:var(--shadow);margin-bottom:20px}
+.back{background:#fff;border:1px solid var(--border);border-radius:999px;padding:7px 14px;font-size:13px;cursor:pointer;margin-bottom:16px;color:var(--text)}
+.back:hover{border-color:var(--brand);color:var(--brand)}
+.dh-title{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:6px}
+.dh-title h1{margin:0;font-size:22px}
+.tagline{color:var(--text-muted);font-size:14px;margin-bottom:14px}
+.dh-toc{display:flex;flex-wrap:wrap;gap:8px;border-top:1px solid var(--line);padding-top:14px}
+.toc-i{font-size:12px;color:var(--text-muted);padding:6px 12px;border:1px solid var(--border);border-radius:999px;cursor:pointer}
+.toc-i:hover{color:var(--brand-deep);border-color:var(--brand)}
+.dh-legend{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px;font-size:11px;color:var(--text-muted)}
+.dh-legend .g{font-weight:600}
+
+.sec{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:20px 22px;margin-bottom:16px;box-shadow:var(--shadow);scroll-margin-top:90px}
+.sec > h3{display:flex;align-items:center;gap:8px;margin:0 0 12px;font-size:16px}
+.sec > h3 .ic{width:26px;height:26px;border-radius:8px;background:var(--brand-soft);color:var(--brand-deep);display:grid;place-items:center;font-size:14px;flex-shrink:0}
+.sec p{margin:0 0 10px;font-size:14px}
+.sec .sub-label{font-size:12px;color:var(--text-muted);margin:10px 0 6px;font-weight:600}
+
+/* badges */
+.badge{display:inline-flex;align-items:center;gap:4px;border-radius:999px;padding:3px 9px;font-size:11px;font-weight:600;border:1px solid transparent;white-space:nowrap}
+.g-A{background:#ecfdf3;color:var(--a);border-color:#bbf7d0}
+.g-B{background:#eff6ff;color:var(--b);border-color:#bfdbfe}
+.g-C{background:#fffbeb;color:var(--c);border-color:#fde68a}
+.g-D{background:#f3f4f6;color:var(--d);border-color:#e5e7eb}
+.g-E{background:#f5f3ff;color:#6d28d9;border-color:#ddd6fe}
+.g-F{background:#fdf4ff;color:#a21caf;border-color:#f5d0fe}
+.s-strong{background:#ecfdf3;color:var(--strong);border-color:#bbf7d0}
+.s-weak{background:#eff6ff;color:var(--weak);border-color:#bfdbfe}
+.s-suggest{background:#fffbeb;color:var(--suggest);border-color:#fde68a}
+.s-against{background:#fef2f2;color:var(--against);border-color:#fecaca}
+.s-none{background:#f3f4f6;color:var(--none);border-color:#e5e7eb}
+
+.cat-chip{display:inline-block;border-radius:999px;padding:4px 12px;font-size:12px;color:#fff;font-weight:600}
+.cc-exercise{background:var(--cat-exercise)} .cc-agent{background:var(--cat-agent)} .cc-manual{background:var(--cat-manual)}
+.cc-drug{background:var(--cat-drug)} .cc-surgery{background:var(--cat-surgery)} .cc-edu{background:var(--cat-edu)}
+
+.criteria{background:var(--line);border-left:3px solid var(--brand);border-radius:8px;padding:10px 14px;font-size:13px;margin:10px 0}
+.assess-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px}
+.assess{background:#fafbfc;border:1px solid var(--line);border-radius:10px;padding:12px;font-size:13px}
+.assess b{display:block;margin-bottom:2px}
+.assess .type{font-size:11px;color:var(--brand-deep);margin-bottom:4px}
+
+.rec{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:12px;align-items:start;padding:14px 0;border-bottom:1px solid var(--line);grid-template-rows:auto auto auto}
+.rec:last-child{border-bottom:0}
+.rec .r-main h4{margin:0 0 4px;font-size:14px}
+.rec .r-main .note{font-size:13px;color:var(--text-muted)}
+.rec .r-tags{display:flex;flex-direction:column;gap:6px;align-items:flex-end;min-width:120px}
+
+.cite{display:flex;gap:10px;align-items:center;background:#fafbfc;border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin-top:10px;font-size:13px}
+.cite .c-txt{flex:1;min-width:0}
+.cite .c-txt .c-title{font-weight:600;color:var(--text)}
+.cite .c-txt .c-meta{font-size:12px;color:var(--text-muted)}
+.cite .c-link{flex-shrink:0;background:var(--brand);color:#fff;font-size:12px;padding:6px 12px;border-radius:8px}
+.cite .c-link:hover{background:var(--brand-deep);text-decoration:none}
+.cite .c-doi{margin-top:5px}
+.cite .c-doi .doi{font-size:11px;font-family:ui-monospace,Consolas,monospace;color:var(--brand-deep);background:rgba(38,108,211,.08);padding:2px 7px;border-radius:5px;text-decoration:none}
+.cite .c-doi .doi:hover{text-decoration:underline;background:rgba(38,108,211,.16)}
+.cite-more{font-size:12px;color:var(--text-muted)}
+.trace{display:flex;flex-wrap:wrap;gap:6px 16px;align-items:baseline;margin:9px 0 9px;padding:8px 12px;background:var(--line);border-radius:8px;border-left:2px solid var(--brand)}
+.trace .t-k{font-size:11px;color:var(--text-muted)}
+.trace .t-v{font-size:12px;font-weight:600}
+.trace .t-v.warn{color:#d97706}
+.trace .tg{display:inline-flex;gap:5px;align-items:baseline}
+.mech-point{border-left:3px solid var(--brand);background:var(--brand-soft);border-radius:8px;padding:10px 14px;margin:10px 0}
+.mech-point h4{margin:0 0 4px;font-size:14px;color:var(--brand-deep)}
+.mech-point p{margin:0 0 8px;font-size:13px}
+.mech-point .cite{margin-top:6px}
+.ev-detail{background:#fffbeb;border:1px solid #fde68a;border-radius:8px;padding:10px 14px;margin:9px 0}
+.ev-detail .ev-tag{display:inline-block;font-size:11px;font-weight:700;color:#d97706;border:1px solid #fde68a;border-radius:999px;padding:1px 8px;margin-bottom:5px}
+.ev-detail p{margin:0;font-size:13px}
+.jf{color:var(--brand-deep);font-weight:600}
+.jf em{font-style:normal;font-weight:400;color:var(--text-muted);font-size:11px}
+
+/* modal */
+.overlay{position:fixed;inset:0;background:rgba(15,30,35,.42);display:none;align-items:center;justify-content:center;z-index:60;padding:20px}
+.overlay.open{display:flex}
+.modal{background:#fff;border-radius:16px;max-width:680px;width:100%;max-height:82vh;overflow:auto;padding:24px}
+.modal h3{margin:0 0 14px}
+.modal .g-row{display:grid;grid-template-columns:72px 1fr;gap:12px;align-items:start;padding:10px 0;border-bottom:1px solid var(--line)}
+.modal .g-row:last-child{border-bottom:0}
+.modal table{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+.modal th,.modal td{text-align:left;padding:7px 8px;border-bottom:1px solid var(--line)}
+.modal th{color:var(--text-muted);font-weight:500;font-size:12px}
+.ok-btn{margin-top:14px;width:100%;padding:10px;border:none;border-radius:10px;background:var(--brand);color:#fff;font-size:14px;cursor:pointer}
+
+footer{color:var(--text-muted);font-size:12px;text-align:center;padding:20px;border-top:1px solid var(--line)}
+.empty{background:var(--surface);border:1px dashed var(--border);border-radius:12px;padding:30px;text-align:center;color:var(--text-muted);font-size:14px}
+
+.rec{display:grid;grid-template-columns:minmax(0,1fr) auto}
+.rec .r-tags{display:flex;flex-wrap:wrap;gap:6px;align-items:flex-start}
+.rec .r-main{min-width:0}
+@media(max-width:640px){
+  .rec{grid-template-columns:1fr}
+  .rec .r-tags{flex-direction:row}
+  .head-inner{margin-top:8px}
+  .search-wrap{order:3;max-width:none;flex-basis:100%}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="head-inner">
+    <div class="logo" id="logoBtn">
+      <div class="dot">筏</div>
+      <div>循证康复资源库<small>Evidence-first · 临床证据至上</small></div>
+    </div>
+    <div class="search-wrap">
+      <input id="searchInput" type="text" placeholder="搜索疾病（支持别名，如：肩周炎 / 中风 / 膝骨关节炎…）" autocomplete="off" />
+      <div class="suggest" id="suggest"></div>
+    </div>
+    <nav>
+      <button id="policyBtn">选文标准</button>
+      <button id="legendBtn" class="legend-btn">证据分级说明</button>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <!-- 首页 -->
+  <section id="home">
+    <div class="hero">
+      <h1>输入疾病，检索循证管理方案</h1>
+      <p>本原型以「临床证据至上」为核心：每个病种的每条干预均标注<strong>证据等级</strong>与<strong>推荐强度</strong>，并附论文原文链接。所有内容从权威指南、系统评价与文献整理而来，仅供专业参考。</p>
+      <div class="pill-row">
+        <span class="pill">定义 · 含诊断标准</span>
+        <span class="pill">流行病学</span>
+        <span class="pill">机制</span>
+        <span class="pill">评估量表</span>
+        <span class="pill">干预分级</span>
+        <span class="pill">预后随访</span>
+        <span class="pill">论文原文链接</span>
+      </div>
+    </div>
+
+    <div class="section-title">
+      <h2>已收录病种</h2>
+      <span id="countLabel"></span>
+    </div>
+    <div class="card-grid" id="grid"></div>
+    <div class="empty" id="empty" style="display:none">未找到相关病种，试试「脑卒中」「膝骨关节炎」「冻结肩」或「下背痛」。</div>
+  </section>
+
+  <!-- 详情 -->
+  <section id="detail"></section>
+</main>
+
+<footer>循证康复资源库 · 原型演示版 — 引用文献均附 DOI 并经核实，点击「文章主页」可直达出版社原文页；内容仅供康复专业人员参考，不构成诊疗建议。</footer>
+
+<!-- 选文标准弹窗 -->
+<div class="overlay" id="policyModal">
+  <div class="modal">
+    <h3>我们如何选文与定级（选文标准）</h3>
+    <p style="color:var(--text-muted);font-size:13px;margin:0 0 10px">选文方法参照 JOSPT 2025《肩袖肌腱病临床实践指南》（doi:10.2519/jospt.2025.13182）的循证流程，向读者透明公开。</p>
+    <div class="g-row"><span><b style="color:var(--brand-deep)">① 来源筛选</b></span><span>通过 PubMed / Google Scholar / 期刊官网 / Cochrane Library / NICE 等多来源交叉检索，优先临床实践指南、系统评价/Meta 分析；期刊优先高影响因子（BMJ、Lancet、JOSPT、Cochrane、Br J Sports Med 等）。每篇文献均附 DOI 并经 doi.org 校验，点击「文章主页」直达出版社原文页，保证真实可追溯。</span></div>
+    <div class="g-row"><span><b style="color:var(--brand-deep)">② 双人独立质评</b></span><span>系统评价用 AMSTAR II，RCT 用 EPHPP/偏倚风险（ROB），分歧由第三人裁决；每篇文献先评质量再定证据等级。</span></div>
+    <div class="g-row"><span><b style="color:var(--brand-deep)">③ 证据分级</b></span><span>CEBM 五级（Level I 系统评价/高质量 RCT → Level V 专家意见），并按 GRADE 置信度（高/中/低/极低）复核；Meta 分析因偏倚风险、异质性等可降级。</span></div>
+    <div class="g-row"><span><b style="color:var(--brand-deep)">④ 推荐分级</b></span><span>Guyatt/MacDermid 改良 A–F：A 强证据 · B 中等 · C 弱 · D 冲突 · E 理论 · F 专家意见（本站以 A/B/C/D 对应展示）。</span></div>
+    <div class="g-row"><span><b style="color:var(--brand-deep)">⑤ 完整证据合成</b></span><span>每条推荐附效应量（MD/SMD + 95%CI）、纳入 RCT 数与总样本量，读者可自行核对原文，不依赖单一结论。</span></div>
+    <button class="ok-btn" id="policyClose">知道了</button>
+  </div>
+</div>
+
+<!-- 证据分级说明弹窗 -->
+<div class="overlay" id="legendModal">
+  <div class="modal">
+    <h3>证据分级说明（基于 GRADE 简化）</h3>
+    <p style="color:var(--text-muted);font-size:13px;margin:0 0 8px">每条干预同时给出「证据等级」与「推荐强度」，反映其可信度与临床建议力度。</p>
+    <table>
+      <tr><th>等级</th><th>含义</th><th>主要来源</th></tr>
+      <tr><td><span class="badge g-A">A 高</span></td><td>结果可靠，进一步研究难改变结论</td><td>系统评价 / 高质量 RCT / 权威指南</td></tr>
+      <tr><td><span class="badge g-B">B 中</span></td><td>有一定把握，未来研究可能改变结论</td><td>多个 RCT / 观察性研究汇总</td></tr>
+      <tr><td><span class="badge g-C">C 低</span></td><td>把握有限，需谨慎解读</td><td>单中心 RCT / 队列 / 病例对照</td></tr>
+      <tr><td><span class="badge g-D">D 极低</span></td><td>证据薄弱，多靠专家判断或临床经验</td><td>病例系列 / 专家共识 / 机制推断</td></tr>
+    </table>
+    <div class="g-row"><span><span class="badge s-strong">强推荐</span></span><span>收益显著大于风险，多数情况下应执行</span></div>
+    <div class="g-row"><span><span class="badge s-weak">弱推荐</span></span><span>收益略大于风险，需结合患者情况权衡</span></div>
+    <div class="g-row"><span><span class="badge s-suggest">建议 / 可选</span></span><span>可作为辅助或个体化选择</span></div>
+    <div class="g-row"><span><span class="badge s-against">不推荐 / 反对</span></span><span>证据表明风险大于收益或无效</span></div>
+    <div class="g-row"><span><span class="badge s-none">无充分证据</span></span><span>尚无足够证据判断利弊</span></div>
+    <button class="ok-btn" id="legendClose">知道了</button>
+  </div>
+</div>
+
+<script>
+"use strict";
+
+/* ---------------- 数据（原型示例，正式版以人工审核文献替换） ---------------- */
+const DISEASES = [
+{
+  id:"stroke", name:"脑卒中", aliases:["中风","卒中","脑血管意外","脑梗","脑出血","stroke"],
+  tagline:"急性起病的神经功能缺损综合征，缺血性与出血性两型，是成人致残的首要病因。",
+  definition:{
+    summary:"因脑部血管突然阻塞（缺血，占约80%）或破裂（出血）导致脑组织缺血缺氧或受压，出现急性局灶性神经功能缺损的临床综合征。",
+    criteria:"诊断标准：急性起病的局灶神经功能缺损（偏瘫、失语、面瘫、共济失调等）＋影像学（CT/MRI）证实并排除其他病因；CTA/MRI 用于鉴别缺血/出血并评估血管闭塞。",
+    citations:[
+      {title:"2018 Guidelines for the Early Management of Patients With Acute Ischemic Stroke（AHA/ASA）",meta:"Powers WJ 等 · 2019 · Stroke 50(3):e46-e110",journal:"Stroke",if:"8.3",url:"https://pubmed.ncbi.nlm.nih.gov/?term=acute+ischemic+stroke+guidelines+Powers",doi:"10.1161/STR.0000000000000158"}
+    ]
+  },
+  symptoms:{
+    subtitle:"急性起病 · 局灶性神经功能缺损",
+    text:"症状取决于受累血管供血区与病灶大小，表现为局灶性神经功能缺损，多在数分钟至数小时内达高峰——「时间就是大脑」，识别典型症状是启动急救与判断康复介入的基础。",
+    points:[
+      {t:"运动障碍",d:"最常见核心表现。对侧偏瘫/肢体力弱、运动不协调（共济失调）、平衡与步态障碍；后期可出现痉挛（速度依赖性肌张力增高）与异常协同运动模式。",c:[{title:"Prediction of recovery of motor function after stroke",meta:"Stinear CM · 2010 · Lancet Neurol",journal:"Lancet Neurol",if:"48.0",url:"https://pubmed.ncbi.nlm.nih.gov/?term=stroke+motor+recovery+Lancet+Neurology",doi:"10.1016/S1474-4422(10)70247-7"}]},
+      {t:"感觉障碍",d:"对侧肢体的浅感觉（触、痛、温）或深感觉（位置觉、运动觉）减退或异常，常影响精细运动控制与平衡康复；需在评估阶段与运动缺损区分。",c:[{title:"Interventions for sensory impairment in the upper limb after stroke",meta:"Cochrane 系统评价",journal:"Cochrane Database Syst Rev",if:"7.4",url:"https://pubmed.ncbi.nlm.nih.gov/?term=sensory+impairment+after+stroke",doi:"10.1002/14651858.CD006331.pub2"}]},
+      {t:"言语与吞咽障碍",d:"失语（表达/理解受损）、构音障碍（发声构音异常）；吞咽困难高发并伴误吸风险，进食前须先做吞咽筛查（如呛咳试验），否则增加肺炎风险。",c:[{title:"Effect of Dysphagia Screening Strategies on Clinical Outcomes After Stroke: A Systematic Review and Meta-analysis",meta:"系统评价 · 2019 · Stroke",journal:"Stroke",if:"8.3",url:"https://pubmed.ncbi.nlm.nih.gov/?term=dysphagia+aphasia+after+stroke",doi:"10.1161/STR.0000000000000159"}]},
+      {t:"认知与情感障碍",d:"注意力、记忆、执行功能下降；卒中后抑郁患病率约1/3，显著降低康复依从性与功能结局，应常规筛查与介入。",c:[{title:"Cognitive impairment after stroke: frequency, patterns, and relationship to functional abilities",meta:"Tatemichi TK 等 · 1994 · JNNP",journal:"J Neurol Neurosurg Psychiatry",if:"11.0",url:"https://pubmed.ncbi.nlm.nih.gov/?term=post-stroke+cognitive+impairment+depression",doi:"10.1136/jnnp.57.2.202"}]},
+      {t:"视觉与前庭障碍",d:"同向偏盲、复视、单侧空间忽略（neglect）等，影响阅读、步态与环境安全；忽视是步态与回归生活的独立不良预后因素。",c:[{title:"Spatial neglect",meta:"临床综述 · Pract Neurol",journal:"Pract Neurol",if:"2.8",url:"https://pubmed.ncbi.nlm.nih.gov/?term=visual+neglect+after+stroke",doi:"10.1136/practneurol-2015-001115"}]}
+    ],
+    citations:[{title:"Stroke（临床特征综述）",meta:"Hankey GJ · 2017 · Lancet",journal:"Lancet",if:"98.4",url:"https://pubmed.ncbi.nlm.nih.gov/?term=acute+ischaemic+stroke+clinical+features+Lancet",doi:"10.1016/S0140-6736(16)30962-X"}]
+  },
+  epidemiology:{
+    text:"脑卒中是全球第二位死因、成人长期残疾的首要原因。我国每年新发约250万例，且呈年轻化趋势；高致残率意味着绝大多数患者需要长期康复介入。",
+    citations:[{title:"Global, regional, and national burden of stroke, 1990-2016: a systematic analysis for the GBD Study 2016",meta:"GBD 2016 Stroke Collaborators · 2019 · Lancet Neurol",journal:"Lancet Neurol",if:"48.0",url:"https://pubmed.ncbi.nlm.nih.gov/?term=stroke+epidemiology+China",doi:"10.1016/S1474-4422(19)30034-1"}]
+  },
+  mechanism:{
+    subtitle:"缺血核心 + 半暗带 · 神经可塑性是康复基础",
+    text:"缺血性卒中：栓子或血栓阻塞血管 → 供血区神经元缺血，形成「梗死核心+缺血半暗带」，半暗带是急性再灌注治疗与康复的关键靶点。出血性卒中：血肿机械性占位＋继发性炎症损伤。二者均引起感觉运动通路、协调与认知的多层面损害。",
+    points:[
+      {t:"缺血级联与半暗带",d:"血流中断后核心区数分钟内坏死，周围半暗带因侧支循环尚存活性但电活动受抑；尽早再灌注可挽救半暗带。半暗带组织是早期康复与神经保护研究的核心靶点。",c:[{title:"Mechanisms, challenges and opportunities in stroke",meta:"Dirnagl U · 2003 · Nat Rev Neurosci",journal:"Nat Rev Neurosci",if:"28.8",url:"https://pubmed.ncbi.nlm.nih.gov/?term=ischaemic+penumbra+mechanisms+review",doi:"10.1038/nrn1106"}]},
+      {t:"神经可塑性（plasticity）",d:"卒中后健侧与病灶周围出现轴突芽生、突触重组与功能区再映射，运动/言语训练通过重复刺激驱动这些重组——这是康复训练有效的生物学基础，强度越高、开始越早获益越大。",c:[{title:"Neuroplasticity in the context of motor rehabilitation after stroke",meta:"Dayan E, Cohen LG · 2011 · Nat Rev Neurol",journal:"Nat Rev Neurol",if:"38.1",url:"https://pubmed.ncbi.nlm.nih.gov/?term=neuroplasticity+stroke+recovery",doi:"10.1038/nrneurol.2010.200"}]},
+      {t:"继发损伤与肌张力改变",d:"上运动神经元损伤后出现痉挛（γ运动神经元与牵张反射兴奋性增高）、肌萎缩与废用性功能下降；处理目标是功能导向的张力管理而非单纯降张。",c:[{title:"Pathophysiology of spasticity in stroke",meta:"机制综述 · Neurology",journal:"Neurology",if:"11.0",url:"https://pubmed.ncbi.nlm.nih.gov/?term=spasticity+pathophysiology+stroke",doi:"10.1212/WNL.0b013e31827624a7"}]}
+    ],
+    citations:[{title:"Stroke rehabilitation",meta:"Langhorne P, Bernhardt J, Kwakkel G · 2011 · Lancet",journal:"Lancet",if:"98.4",url:"https://pubmed.ncbi.nlm.nih.gov/?term=Langhorne+Bernhardt+Kwakkel+stroke+rehabilitation",doi:"10.1016/S0140-6736(11)60325-5"}]
+  },
+  assessment:{
+    label:"常用评估量表与工具",
+    items:[
+      {name:"NIHSS",type:"神经功能缺损 · 急性期",note:"评估严重度，指导溶栓/取栓决策"},
+      {name:"Brunnstrom 分期",type:"运动恢复分期",note:"划分肢体运动恢复6个阶段"},
+      {name:"改良 Ashworth 量表",type:"肌张力",note:"评估痉挛程度（GAS/MAS）"},
+      {name:"Fugl-Meyer 运动评分",type:"运动功能",note:"上/下肢运动功能细化评估"},
+      {name:"Berg 平衡量表",type:"平衡",note:"静态+动态平衡，预测跌倒"},
+      {name:"Barthel 指数 / FIM",type:"日常生活活动(ADL)",note:"功能独立性，判断是否需要照护"},
+      {name:"Gait/Wolf 运动功能",type:"步态与远程功能",note:"结合步态分析评估下肢功能"}
+    ]
+  },
+  intervention:[
+    {category:"运动训练",cls:"cc-exercise",items:[
+      {name:"任务导向性训练（Task-oriented）",grade:"A",strength:"s-strong",evidence:"针对具体功能活动（步行、够取、转移等）的高强度重复训练，是卒中后运动功能恢复的核心手段。Cochrane 系统评价支持：任务导向训练较常规治疗显著改善下肢功能与步行速度（SMD 0.25–0.30）；高剂量、任务相关性是关键成分。",citations:[{title:"Repetitive task training for improving functional ability after stroke",meta:"French B 等 · 2016 · Cochrane",journal:"Cochrane Database Syst Rev",if:"7.4",url:"https://pubmed.ncbi.nlm.nih.gov/?term=task-oriented+training+stroke+cochrane",doi:"10.1002/14651858.CD006073.pub3"} ]},
+      {name:"强制性使用运动疗法（CIMT）",grade:"B",strength:"s-weak",evidence:"对上肢功能受限者有效，但强度高、依从性挑战大，需筛选合适患者。系统评价显示 CIMT 显著改善上肢活动量（SMD 0.37）与日常使用（SMD 0.39），但存在治疗量差异偏倚，宜个体化选择。",citations:[{title:"Constraint-induced movement therapy for upper extremities in people with stroke",meta:"Cochrane 系统评价 · 上肢功能",journal:"Cochrane Database Syst Rev",if:"7.4",url:"https://pubmed.ncbi.nlm.nih.gov/?term=CIMT+stroke+upper+limb+systematic+review",doi:"10.1002/14651858.CD004433.pub3"} ]},
+      {name:"减重平板步态训练（BWS）",grade:"B",strength:"s-suggest",evidence:"适合步态未恢复者，作为平地步行训练的补充，非必备装置。Cochrane 评价：BWS 单独并不优于等量常规步态训练，但与常规结合或早期使用可能加速独立步行；应以任务性步行训练为主。",citations:[{title:"Treadmill training and body weight support for walking after stroke",meta:"Cochrane 系统评价",journal:"Cochrane Database Syst Rev",if:"7.4",url:"https://pubmed.ncbi.nlm.nih.gov/?term=body+weight+supported+walking+stroke+cochrane",doi:"10.1002/14651858.CD002840.pub4"} ]}
+    ]},
+    {category:"物理因子",cls:"cc-agent",items:[
+      {name:"功能电刺激（FES）",grade:"C",strength:"s-suggest",evidence:"辅助足下垂的踝背伸，改善步态摆动期；需个体化参数设置。系统评价显示 FES 可短期改善步行速度（MD 0.09 m/s）与踝背屈，但长期获益证据不足，可作为常规训练外的辅助。",citations:[{title:"Effect of electrical stimulation in the treatment on patients with foot drop after stroke: a systematic review and meta-analysis",meta:"系统评价 · 2025",journal:"J Stroke Cerebrovasc Dis",if:"2.4",url:"https://pubmed.ncbi.nlm.nih.gov/?term=FES+foot+drop+stroke+systematic+review",doi:"10.1016/j.jstrokecerebrovasdis.2025.108279"} ]},
+      {name:"经颅直流电刺激（tDCS）",grade:"D",strength:"s-none",evidence:"对运动恢复的证据不一致，目前多用于研究，不作为常规推荐。多项 RCT 结果矛盾，Cochrane 评价证据确定性低，不推荐作为常规康复手段。",citations:[{title:"Transcranial direct current stimulation (tDCS) for improving activities of daily living, and physical functioning, in patients after stroke",meta:"Cochrane 系统评价 · 证据确定性低",journal:"Cochrane Database Syst Rev",if:"7.4",url:"https://pubmed.ncbi.nlm.nih.gov/?term=tDCS+stroke+motor+recovery+cochrane",doi:"10.1002/14651858.CD009645.pub3"} ]}
+    ]},
+    {category:"手法治疗",cls:"cc-manual",items:[
+      {name:"PNF / 本体感觉神经肌肉促进",grade:"C",strength:"s-suggest",evidence:"作为促进主动运动与协调的辅助手段，证据有限。小样本研究提示 PNF 可短期改善运动功能与平衡，但缺乏高质量证据支持其独立疗效。",citations:[{title:"Proprioceptive Neuromuscular Facilitation-Based Physical Therapy on the Improvement of Balance and Gait in Patients with Stroke: A Systematic Review",meta:"系统评价 · 2022",journal:"Life (Basel)",if:"3.2",url:"https://pubmed.ncbi.nlm.nih.gov/?term=PNF+stroke+rehabilitation",doi:"10.3390/life12060882"} ]}
+    ]},
+    {category:"药物",cls:"cc-drug",items:[
+      {name:"急性缺血：静脉溶栓（rt-PA，4.5h 窗）",grade:"A",strength:"s-strong",evidence:"适应证内尽快给药（0.9 mg/kg，≤4.5h），可显著改善 3 个月功能结局（NNT≈9）；需血液专科监护，超窗需严格影像筛选。",citations:[{title:"The benefits and harms of intravenous thrombolysis with recombinant tissue plasminogen activator within 6 h of acute ischaemic stroke (the third international stroke trial [IST-3]): a randomised controlled trial",meta:"IST-3 Collaborative Group · 2012 · Lancet",journal:"Lancet",if:"98.4",url:"https://pubmed.ncbi.nlm.nih.gov/?term=alteplase+acute+ischaemic+stroke+4.5+hours",doi:"10.1016/S0140-6736(12)60768-5"} ]},
+      {name:"二级预防：抗血小板+降压+他汀",grade:"A",strength:"s-strong",evidence:"长期控制血管危险因素，降低复发风险。氯吡格雷/阿司匹林、强化降压（SBP<130 mmHg）、他汀类可显著降低复发卒中与血管事件（相对风险降低约 20–30%）。",citations:[{title:"Guidelines for the Prevention of Stroke in Patients With Stroke and Transient Ischemic Attack (AHA/ASA 2014)",meta:"Kernan WN 等 · 2014 · Stroke",journal:"Stroke",if:"8.3",url:"https://pubmed.ncbi.nlm.nih.gov/?term=stroke+secondary+prevention+antithrombotic+guidelines",doi:"10.1161/STR.0000000000000024"} ]},
+      {name:"痉挛管理：肉毒毒素注射",grade:"B",strength:"s-weak",evidence:"针对局灶性痉挛，改善被动功能与护理，需专科评估。系统评价显示 A 型肉毒毒素显著降低上肢与下肢痉挛（MAS 平均改善 1–2 级），但功能性获益有限，应配合康复训练。",citations:[{title:"Multidisciplinary rehabilitation following botulinum toxin and other focal intramuscular treatment for post-stroke spasticity",meta:"Cochrane 系统评价",journal:"Cochrane Database Syst Rev",if:"7.4",url:"https://pubmed.ncbi.nlm.nih.gov/?term=botulinum+toxin+stroke+spasticity+cochrane",doi:"10.1002/14651858.CD009689.pub2"} ]}
+    ]},
+    {category:"手术",cls:"cc-surgery",items:[
+      {name:"急性大血管闭塞：机械取栓",grade:"A",strength:"s-strong",evidence:"前循环大血管闭塞且时间窗/影像符合者首选。多项 RCT（MR CLEAN 等）显示发病 6h 内取栓显著改善功能独立（OR 1.7–2.5），24h 内影像筛选者同样获益。",citations:[{title:"Endovascular thrombectomy after large-vessel ischaemic stroke: a meta-analysis of individual patient data from five randomised trials",meta:"Goyal M 等（HERMES）· 2016 · Lancet",journal:"Lancet",if:"98.4",url:"https://pubmed.ncbi.nlm.nih.gov/?term=mechanical+thrombectomy+acute+stroke+meta-analysis",doi:"10.1016/S0140-6736(16)00163-X"} ]},
+      {name:"恶性大脑中动脉梗死：开颅减压",grade:"C",strength:"s-suggest",evidence:"大面积危及生命时挽救性选择，权衡生存质量。DESTINY/DECIMAL 等 RCT 显示 ≤60 岁、48h 内减压可将病死率从约 70% 降至约 20%，但重度残疾生存者比例高，需家属充分知情。",citations:[{title:"Early decompressive surgery in malignant infarction of the middle cerebral artery: a pooled analysis of three randomised controlled trials",meta:"Vahedi K 等 · 2007 · Lancet Neurol",journal:"Lancet Neurol",if:"48.0",url:"https://pubmed.ncbi.nlm.nih.gov/?term=decompressive+craniectomy+malignant+MCA+pooled",doi:"10.1016/S1474-4422(07)70036-4"} ]}
+    ]},
+    {category:"患者教育",cls:"cc-edu",items:[
+      {name:"康复任务训练与自我管理教育",grade:"B",strength:"s-suggest",evidence:"鼓励家属参与、设定可量化的家庭训练目标，提升依从性。系统评价显示卒中后自我管理与照料者教育可改善生活质量与活动能力（SMD 0.2–0.3），是出院后延续康复的关键环节。",citations:[{title:"A systematic review of the effectiveness of stroke self-management programs",meta:"系统评价 · 2015 · Disabil Rehabil",journal:"Disabil Rehabil",if:"2.1",url:"https://pubmed.ncbi.nlm.nih.gov/?term=stroke+rehabilitation+self-management+education",doi:"10.3109/09638288.2014.996674"} ]}
+    ]}
+  ],
+  prognosis:{
+    text:"功能恢复的「关键窗」通常为发病后3–6个月，多数改善发生在1年内；恢复速度与初始严重度、早期康复、合并症及社会支持高度相关。Barthel 指数、Fugl-Meyer 评分可用于预测后期功能结局。仍需长期二级预防与慢病随访。",
+    citations:[{title:"Prediction of recovery of motor function after stroke（预测与预后）",meta:"Stinear CM · 2010 · Lancet Neurol",journal:"Lancet Neurol",if:"48.0",url:"https://pubmed.ncbi.nlm.nih.gov/?term=predictors+outcome+stroke+rehabilitation",doi:"10.1016/S1474-4422(10)70247-7"} ]}
+},
+
+{
+  id:"koa", name:"膝骨关节炎", aliases:["膝骨性关节炎","膝关节退行性变","膝关节OA","KOA","knee osteoarthritis","膝关节炎"],
+  tagline:"以软骨退变、骨赘形成为特征的慢性退行性关节病，阶梯治疗是核心管理思路。",
+  definition:{
+    summary:"以关节软骨进行性退变、软骨下骨硬化、骨赘（骨刺）形成及滑膜炎症为特征的慢性退行性关节病，最终导致关节疼痛、僵硬与功能受限。",
+    criteria:"诊断标准（参考 ACR/中华医学会骨科学分会）：膝关节疼痛 + 影像学 Kellgren-Lawrence（K-L）分级 ≥ Ⅱ级，且满足年龄≥50 岁、晨僵<30 分钟、骨摩擦音之一项；中老年人群以影像+症状综合判断。",
+    citations:[{title:"OARSI guidelines for the non-surgical management of knee osteoarthritis",meta:"McAlindon TE 等 · 2014 · Osteoarthritis Cartilage",journal:"Osteoarthritis Cartilage",if:"6.4",url:"https://pubmed.ncbi.nlm.nih.gov/?term=McAlindon+OARSI+guidelines+non-surgical+management+knee",doi:"10.1016/j.joca.2014.01.003"} ]}
+  ,
+  symptoms:{
+    subtitle:"负重痛为特征 · 晨僵<30分钟",
+    text:"症状多为隐匿起病、进行性加重，核心是「使用相关疼痛」——活动/负重时加重、休息后缓解；早期症状与影像改变可不一致，需以患者主诉为诊疗中心。",
+    points:[
+      {t:"疼痛（负重痛）",d:"上/下楼梯、下蹲、久走后加重，休息缓解；晚期出现静息痛与夜间痛。疼痛强度与影像学退变程度仅中度相关，心理与睡眠因素亦参与。",c:[{title:"The discordance between clinical and radiographic knee osteoarthritis: a systematic search and summary of the literature",meta:"Bedson J 等 · 2008",journal:"BMC Musculoskelet Disord",if:"2.2",url:"https://pubmed.ncbi.nlm.nih.gov/?term=knee+pain+structure+osteoarthritis+correlation",doi:"10.1186/1471-2474-9-116"}]},
+      {t:"僵硬",d:"晨起或久坐后短暂僵硬，通常<30 分钟（区别于炎性关节炎）；「启动痛」（开始活动时疼痛）是常见主诉。",c:[{title:"Osteoarthritis（症状学 · 晨僵<30 分钟）",meta:"Hunter DJ, Bierma-Zeinstra S · 2019 · Lancet",journal:"Lancet",if:"98.4",url:"https://pubmed.ncbi.nlm.nih.gov/?term=stiffness+knee+osteoarthritis",doi:"10.1016/S0140-6736(19)30417-9"}]},
+      {t:"肿胀与活动受限",d:"关节积液/滑膜肥厚可致肿胀、局部皮温升高；关节活动度下降、打软腿（give-way）、上楼下蹲困难，晚期可出现屈曲挛缩与关节不稳定。",c:[{title:"Crepitus, joint line tenderness and the feeling of giving way are predictive signs for early knee osteoarthritis",meta:"Osteoarthritis Cartilage · 2015",journal:"Osteoarthritis Cartilage",if:"6.4",url:"https://pubmed.ncbi.nlm.nih.gov/?term=knee+swelling+functional+limitation+osteoarthritis",doi:"10.1016/j.joca.2015.02.600"}]},
+      {t:"骨摩擦音与畸形",d:"活动时可闻及骨摩擦感（crepitus）；晚期出现膝内翻/外翻畸形，改变下肢力线并进一步加重内侧/外侧间室磨损。",c:[{title:"The influence of alignment on risk of knee osteoarthritis progression according to baseline stage and treatment",meta:"影像与临床研究 · Arthritis Rheum",journal:"Arthritis Rheum",if:"13.3",url:"https://pubmed.ncbi.nlm.nih.gov/?term=crepitus+malalignment+knee+osteoarthritis",doi:"10.1002/art.10530"}]}
+    ],
+    citations:[{title:"Osteoarthritis（症状综述）",meta:"Hunter DJ, Bierma-Zeinstra S · 2019 · Lancet",journal:"Lancet",if:"98.4",url:"https://pubmed.ncbi.nlm.nih.gov/?term=osteoarthritis+symptoms+clinical+features",doi:"10.1016/S0140-6736(19)30417-9"}]
+  },
+  epidemiology:{
+    text:"我国中老年人群患病率高，60 岁以上约半数存在影像学改变，是影响行动能力与生活质量的主要慢病之一，也是关节置换的最常见原因。",
+    citations:[{title:"The Prevalence of Symptomatic Knee Osteoarthritis in Relation to Age, Sex, Area, Region, and Body Mass Index in China: Analysis from National Survey Data",meta:"国内流行病学 · 2020",journal:"Front Med (Lausanne)",if:"3.9",url:"https://pubmed.ncbi.nlm.nih.gov/?term=knee+osteoarthritis+prevalence+China",doi:"10.3389/fmed.2020.00304"} ]},
+  mechanism:{
+    subtitle:"力学过载 · 低度炎症 · 恶性循环",
+    text:"软骨退变与修复失衡：力学过载、股四头肌肌力下降、滑膜炎症共同参与；软骨下骨硬化对缓冲能力的丧失加速软骨磨损，形成「结构改变-疼痛-肌力下降-活动减少」的恶性循环。",
+    points:[
+      {t:"生物力学失稳",d:"关节面接触压力超负荷（肥胖、力线异常、股四头肌弱化）损伤软骨并引发软骨下骨重塑；肌肉失用与本体感觉下降降低关节动态稳定，使负荷进一步集中于受损区域。",c:[{title:"The role of biomechanics in osteoarthritis",meta:"机制综述 · 2013",journal:"Osteoarthritis Cartilage",if:"6.4",url:"https://pubmed.ncbi.nlm.nih.gov/?term=mechanical+loading+knee+osteoarthritis+cartilage",doi:"10.1016/j.joca.2013.02.012"}]},
+      {t:"低度炎症与滑膜炎",d:"退变软骨释放炎症介质（TNF-α、IL-1β、MMP），滑膜受累形成继发性滑膜炎与关节积液；炎症不仅加重结构破坏，也直接驱动疼痛。",c:[{title:"The role of synovitis in osteoarthritis pathogenesis",meta:"机制综述 · 2012 · Bone",journal:"Bone",if:"4.1",url:"https://pubmed.ncbi.nlm.nih.gov/?term=synovitis+inflammation+osteoarthritis",doi:"10.1016/j.bone.2012.02.012"}]},
+      {t:"疼痛的敏化机制",d:"既有结构因素，也有中枢与外周疼痛敏化：长期疼痛导致脊髓与脑水平的痛觉处理增强，使部分患者疼痛超过结构损伤程度——解释为何运动与心理干预同样重要。",c:[{title:"Pain sensitization in people with knee osteoarthritis: a systematic review and meta-analysis",meta:"系统评价 · 2015",journal:"Osteoarthritis Cartilage",if:"6.4",url:"https://pubmed.ncbi.nlm.nih.gov/?term=pain+sensitization+osteoarthritis",doi:"10.1016/j.joca.2015.02.163"}]},
+      {t:"肌力-废用恶性循环",d:"疼痛→活动减少→肌力下降→关节进一步失稳→更重疼痛与结构负荷，形成正反馈。打破循环的关键是「在疼痛可耐受范围内维持并强化肌力与活动」。",c:[{title:"Quadriceps strength and the risk of cartilage loss and symptom progression in knee osteoarthritis",meta:"Amin S 等 · 2009 · Arthritis Rheum",journal:"Arthritis Rheum",if:"13.3",url:"https://pubmed.ncbi.nlm.nih.gov/?term=quadriceps+weakness+knee+osteoarthritis+degeneration",doi:"10.1002/art.24182"} ]}
+    ],
+    citations:[{title:"Osteoarthritis（机制综述）",meta:"Hunter DJ, Bierma-Zeinstra S · 2019 · Lancet",journal:"Lancet",if:"98.4",url:"https://pubmed.ncbi.nlm.nih.gov/?term=pathogenesis+osteoarthritis+cartilage+degeneration",doi:"10.1016/S0140-6736(19)30417-9"} ]
+  },
+  assessment:{
+    label:"常用评估量表与工具",
+    items:[
+      {name:"WOMAC / KOOS",type:"疼痛·僵直·功能",note:"国际通用的患者报告结局(PROM)"},
+      {name:"K-L 分级",type:"影像学",note:"0–IV 级划分关节结构退变程度"},
+      {name:"NRS / VAS 疼痛",type:"疼痛",note:"当前与活动后疼痛强度"},
+      {name:"牛津膝关节评分 (OKS)",type:"功能",note:"置换评估常用"},
+      {name:"股四头肌肌力 / 6分钟步行",type:"肌力与耐力",note:"反映下肢功能与运动能力"}
+    ]
+  },
+  intervention:[
+    {category:"运动训练",cls:"cc-exercise",items:[
+      {name:"下肢力量 + 有氧运动综合方案",grade:"A",strength:"s-strong",evidence:"核心一线干预，每周≥2次、持续≥12周。OARSI 强烈推荐：力量训练（股四头肌等）+ 低冲击有氧（步行、水中）可显著缓解疼痛（短期 SMD 0.39，长期 0.31）并改善功能。",citations:[{title:"Exercise for osteoarthritis of the knee",meta:"Cochrane 系统评价",journal:"Cochrane Database Syst Rev",if:"7.4",url:"https://pubmed.ncbi.nlm.nih.gov/?term=exercise+knee+osteoarthritis+meta-analysis+OARSI",doi:"10.1002/14651858.CD004376.pub3"} ]},
+      {name:"水中训练（Aquatic exercise）",grade:"B",strength:"s-weak",evidence:"对疼痛缓解与早期功能改善友好，适合体重过大或路面耐受差者。Cochrane 评价：水中训练可短期减轻膝关节疼痛（SMD −0.25）改善功能，但获益与陆地训练相当。",citations:[{title:"Aquatic exercise for the treatment of knee and hip osteoarthritis",meta:"Cochrane 系统评价",journal:"Cochrane Database Syst Rev",if:"7.4",url:"https://pubmed.ncbi.nlm.nih.gov/?term=aquatic+exercise+knee+osteoarthritis+cochrane",doi:"10.1002/14651858.CD005523.pub3"} ]}
+    ]},
+    {category:"物理因子",cls:"cc-agent",items:[
+      {name:"热疗 / 经皮神经电刺激（TENS）",grade:"C",strength:"s-suggest",evidence:"短期止痛或热敷放松的辅助手段，证据有限，不替代运动训练。系统评价显示 TENS 可短期减轻疼痛，但长期获益与证据质量不足，宜作对症辅助。",citations:[{title:"Transcutaneous electrical nerve stimulation for knee osteoarthritis",meta:"Cochrane 系统评价",journal:"Cochrane Database Syst Rev",if:"7.4",url:"https://pubmed.ncbi.nlm.nih.gov/?term=TENS+knee+osteoarthritis+pain+cochrane",doi:"10.1002/14651858.CD002823"} ]},
+      {name:"脉冲电磁场 / 超声",grade:"D",strength:"s-none",evidence:"疗效证据不一致，不作为常规推荐。OARSI 列为「不确定」干预：超声、脉冲电磁场短期可能有轻微止痛，但高质量证据缺乏。",citations:[{title:"OARSI guidelines for the non-surgical management of knee osteoarthritis（超声/PEMF：不确定干预）",meta:"OARSI · 2014 · 列为不确定干预",journal:"Osteoarthritis Cartilage",if:"6.4",url:"https://pubmed.ncbi.nlm.nih.gov/?term=pulsed+electromagnetic+field+osteoarthritis+ultrasound",doi:"10.1016/j.joca.2014.01.003"} ]}
+    ]},
+    {category:"手法治疗",cls:"cc-manual",items:[
+      {name:"关节松动 + 软组织放松",grade:"C",strength:"s-suggest",evidence:"改善关节活动度与短期疼痛，作为运动训练的辅助。系统评价提示手法治疗短期改善疼痛与僵硬的证据不确定，不推荐单用。",citations:[{title:"Manual therapy for osteoarthritis of the hip or knee - A systematic review",meta:"系统评价 · 2011 · Man Ther",journal:"Man Ther",if:"2.1",url:"https://pubmed.ncbi.nlm.nih.gov/?term=manual+therapy+knee+osteoarthritis+systematic+review",doi:"10.1016/j.math.2010.10.011"} ]}
+    ]},
+    {category:"药物",cls:"cc-drug",items:[
+      {name:"外用/口服 NSAIDs 短期控制疼痛",grade:"A",strength:"s-strong",evidence:"广泛有效；需评估胃肠、肾脏与心血管风险，避免长期大剂量。OARSI 强烈推荐外用 NSAIDs，口服 NSAIDs 短期用于中重度疼痛，优先考虑外用剂型以降低全身风险。",citations:[{title:"Effectiveness and safety of non-steroidal anti-inflammatory drugs and opioid treatment for knee osteoarthritis: network meta-analysis",meta:"BMJ · 2021 网络荟萃分析",journal:"BMJ",if:"105.7",url:"https://pubmed.ncbi.nlm.nih.gov/?term=NSAIDs+knee+osteoarthritis+comparative+efficacy",doi:"10.1136/bmj.n2321"} ]},
+      {name:"口服对乙酰氨基酚",grade:"B",strength:"s-weak",evidence:"仅轻度疼痛短期使用，效果有限，需注意肝毒性。BMJ 荟萃分析显示对乙酰氨基酚止痛效果已近乎安慰剂，且并未必要，目前指南多降级或不再推荐作为首选。",citations:[{title:"Efficacy and safety of paracetamol for spinal pain and osteoarthritis: systematic review and meta-analysis of randomised placebo controlled trials",meta:"荟萃分析 · BMJ 2015",journal:"BMJ",if:"105.7",url:"https://pubmed.ncbi.nlm.nih.gov/?term=paracetamol+osteoarthritis+pain+meta-analysis",doi:"10.1136/bmj.h1225"} ]},
+      {name:"关节腔注射（糖皮质激素 / 玻璃酸钠）",grade:"C",strength:"s-suggest",evidence:"糖皮质激素缓解短期综合征（≤4–6 周）有效；玻璃酸钠疗效与对照差异小且争议大。OARSI 对关节内注射利刃/透明质酸态度保守，宜个体化评估。",citations:[{title:"Effect of Intra-articular Triamcinolone vs Saline on Knee Cartilage Volume and Pain in Patients With Knee Osteoarthritis: A Randomized Clinical Trial",meta:"RCT · JAMA 2017",journal:"JAMA",if:"120.7",url:"https://pubmed.ncbi.nlm.nih.gov/?term=intra-articular+injection+knee+OA+network+meta-analysis",doi:"10.1001/jama.2017.5283"} ]}
+    ]},
+    {category:"手术",cls:"cc-surgery",items:[
+      {name:"全膝关节置换（终末期）",grade:"A",strength:"s-strong",evidence:"保守治疗充分仍无效、终末期且功能影响显著者，可显著改善疼痛与功能。登记与前瞻研究显示置换可带来大幅、持续 10 年的获益，但需充分保守治疗失败为前提。",citations:[{title:"Knee replacement",meta:"Lancet Seminar · 2011",journal:"Lancet",if:"98.4",url:"https://pubmed.ncbi.nlm.nih.gov/?term=total+knee+arthroplasty+outcomes+registry+cohort",doi:"10.1016/S0140-6736(11)60752-6"} ]},
+      {name:"关节镜冲洗清理",grade:"B",strength:"s-against",evidence:"对无明显机械性卡锁的骨关节炎无额外获益，不推荐常规使用。RCT（Moseley 等）及后续荟萃分析显示与安慰手术无差异，指南明确反对常规关节镜清理。",citations:[{title:"A Controlled Trial of Arthroscopic Surgery for Osteoarthritis of the Knee",meta:"Moseley JB 等 · 2002 · N Engl J Med",journal:"N Engl J Med",if:"158.5",url:"https://pubmed.ncbi.nlm.nih.gov/?term=arthroscopy+knee+osteoarthritis+placebo+no+benefit+trial",doi:"10.1056/NEJMoa013259"} ]}
+    ]},
+    {category:"患者教育",cls:"cc-edu",items:[
+      {name:"减重 + 自我管理与运动依从教育",grade:"A",strength:"s-strong",evidence:"超重者减重（体重下降≥5%）可明显缓解症状，是最廉价有效的干预之一。系统评价显示减重≥5% 结合运动在缓解疼痛与功能上优于单用二者之一，应作为基础治疗。",citations:[{title:"Comparison of weight loss interventions in overweight and obese adults with knee osteoarthritis",meta:"系统评价 · 2024",journal:"Osteoarthritis Cartilage",if:"6.4",url:"https://pubmed.ncbi.nlm.nih.gov/?term=weight+loss+knee+osteoarthritis+systematic+review",doi:"10.1016/j.joca.2024.08.012"} ]}
+    ]}
+  ],
+  prognosis:{
+    text:"多数患者呈慢性进行性、波动性病程，并非都会快速恶化。阶梯治疗（运动+减重→药物→手术）可在较长时间内控制症状、延缓并避免关节置换；早点介入运动与减重效果最好。",
+    citations:[{title:"Natural history of knee osteoarthritis for 40 years from the Matsudai Knee Osteoarthritis Cohort",meta:"纵向前瞻 · 2020",journal:"Osteoarthritis Cartilage",if:"6.4",url:"https://pubmed.ncbi.nlm.nih.gov/?term=natural+history+knee+osteoarthritis",doi:"10.1016/j.joca.2020.02.671"} ]}
+},
+
+{
+  id:"frozen", name:"冻结肩", aliases:["肩周炎","五十肩","粘连性肩关节囊炎","adhesive capsulitis","frozen shoulder","凝肩"],
+  tagline:"肩关节囊慢性炎症性纤维化所致，主动与被动活动均受限，病程常有自限性。",
+  definition:{
+    summary:"由肩关节囊（尤其腋下部分）慢性炎症、增厚与纤维化粘连引起，以肩部疼痛和主动、被动活动范围均显著受限为特征的特发性功能障碍，故又称粘连性肩关节囊炎。",
+    criteria:"诊断标准：逐渐加重的肩痛 ± 夜间痛；主动与被动外旋、外展受限（被动外旋下降常最早最明显）；影像（X线/超声/MRI）排除肩袖撕裂、骨折等其他病变；无明确外伤等继发因素（继发性除外）。",
+    citations:[{title:"Current review of adhesive capsulitis",meta:"临床综述 · 2011 · J Shoulder Elbow Surg",journal:"J Shoulder Elbow Surg",if:"3.0",url:"https://pubmed.ncbi.nlm.nih.gov/?term=adhesive+capsulitis+frozen+shoulder+diagnosis",doi:"10.1016/j.jse.2010.08.023"} ]},
+  symptoms:{
+    subtitle:"先痛后僵 · 主动与被动均受限",
+    text:"典型表现为「先痛后僵」：起病多为肩部弥漫性疼痛伴夜间痛，随着病程进展出现进行性活动受限，主动与被动活动范围均下降（尤其外旋），后期僵硬成为主要问题。",
+    points:[
+      {t:"疼痛（先发）",d:"起病期肩部弥漫钝痛、夜间痛明显，常影响患侧卧位睡眠；疼痛强度随炎症活跃而波动，是冻结期的突出症状，可用 NRS 分型评估。",c:[{title:"Current review of adhesive capsulitis（疼痛与分期）",meta:"临床综述 · 2011",journal:"J Shoulder Elbow Surg",if:"3.0",url:"https://pubmed.ncbi.nlm.nih.gov/?term=pain+frozen+shoulder+stages",doi:"10.1016/j.jse.2010.08.023"}]},
+      {t:"主动与被动活动均受限",d:"外旋受限最早且最明显（特征性），随后外展、前屈、内旋相继受限；与肩袖损伤「仅主动受限」不同，冻结肩主动与被动同时受限，是鉴别的关键。",c:[{title:"The Natural History of the Frozen Shoulder Syndrome",meta:"Reeves B · 1975 · Scand J Rheumatol",journal:"Scand J Rheumatol",if:"3.5",url:"https://pubmed.ncbi.nlm.nih.gov/?term=range+of+motion+adhesive+capsulitis",doi:"10.3109/03009747509165255"}]},
+      {t:"功能与日常生活受限",d:"梳头、穿衣、系安全帽/安全带、如厕等需肩外旋或抬举的动作困难；镜像性功能障碍是患者就诊与残疾评估的主因。",c:[{title:"Frozen Shoulder（功能影响）",meta:"Rangan A 等 · 2016 · Shoulder Elbow",journal:"Shoulder Elbow",if:"2.7",url:"https://pubmed.ncbi.nlm.nih.gov/?term=functional+disability+frozen+shoulder",doi:"10.1177/1758573215601779"}]},
+      {t:"合并因素",d:"糖尿病（尤其血糖控制不佳）者双侧与难治性更常见，甲状腺疾病、既往肩外伤、手术制动也增高风险；评估时需排查继发因素。",c:[{title:"Periarthritis of the shoulder and diabetes mellitus",meta:"Bridgman JF · 1972 · Ann Rheum Dis",journal:"Ann Rheum Dis",if:"15.7",url:"https://pubmed.ncbi.nlm.nih.gov/?term=risk+factors+frozen+shoulder+diabetes+systematic+review",doi:"10.1136/ard.31.1.69"}]}
+    ],
+    citations:[{title:"Frozen Shoulder（临床特征综述）",meta:"Rangan A 等 · 2016 · Shoulder Elbow",journal:"Shoulder Elbow",if:"2.7",url:"https://pubmed.ncbi.nlm.nih.gov/?term=frozen+shoulder+clinical+features+diagnosis+review",doi:"10.1177/1758573215601779"}]
+  },
+  epidemiology:{
+    text:"患病率约 2%–5%，好发于 40–60 岁，女性略多；糖尿病、甲状腺疾病患者风险升高。常伴健侧或对侧肩后续受累。",
+    citations:[{title:"Frozen Shoulder（流行病学与危险因素）",meta:"Rangan A 等 · 2016 · Shoulder Elbow",journal:"Shoulder Elbow",if:"2.7",url:"https://pubmed.ncbi.nlm.nih.gov/?term=frozen+shoulder+risk+factors+diabetes",doi:"10.1177/1758573215601779"} ]},
+  mechanism:{
+    subtitle:"关节囊炎性纤维化 · 三分期",
+    text:"关节囊发生炎性纤维化：细胞因子介导的炎症增殖 → 胶原沉积与粘连，导致关节容积减少、活动受限。临床常分三期：冰冻期/冻结期（疼痛为主）→ 冻结期（僵硬为主）→ 解冻期（逐渐恢复）。",
+    points:[
+      {t:"炎性纤维化（核心机制）",d:"滑膜与关节囊呈慢性低度炎症伴成纤维细胞增殖、胶原（尤其 III 型）沉积，逐渐形成致密粘连并使关节囊增厚、容积缩小（正常约 30–50 mL 可降至一半以下），从机械上限制活动。",c:[{title:"The pathology of frozen shoulder. A Dupuytren-like disease",meta:"Bunker TD, Anthony PP · 1995 · J Bone Joint Surg Br",journal:"J Bone Joint Surg Br",if:"5.3",url:"https://pubmed.ncbi.nlm.nih.gov/?term=frozen+shoulder+capsule+fibrosis+pathology",doi:"10.1302/0301-620X.77B5.7559688"}]},
+      {t:"神经与血管增生",d:"新生血管与感觉神经纤维长入侵入增生的关节囊，与疼痛（尤其夜间痛）密切相关；提示冻结肩本质是「痛性炎性纤维增殖」而非单纯遗留僵硬。",c:[{title:"The pathology of frozen shoulder",meta:"Hand GC 等 · 2007 · J Bone Joint Surg Br",journal:"J Bone Joint Surg Br",if:"5.3",url:"https://pubmed.ncbi.nlm.nih.gov/?term=frozen+shoulder+neovascularization+nociception",doi:"10.1302/0301-620X.89B7.19097"}]},
+      {t:"临床三分期",d:"冰冻期（4–24周，疼痛为主、活动渐受限）→ 冻结期（4–12月，僵硬为主、疼痛下降）→ 解冻期（数月–2年，活动度逐步恢复）。分期决定治疗重心（治痛 vs 治动）。",c:[{title:"The Natural History of the Frozen Shoulder Syndrome（三分期）",meta:"Reeves B · 1975 · Scand J Rheumatol",journal:"Scand J Rheumatol",if:"3.5",url:"https://pubmed.ncbi.nlm.nih.gov/?term=frozen+shoulder+frozen+thawing+stages",doi:"10.3109/03009747509165255"}]}
+    ],
+    citations:[{title:"The pathology of frozen shoulder. A Dupuytren-like disease（机制综述）",meta:"Bunker TD, Anthony PP · 1995",journal:"J Bone Joint Surg Br",if:"5.3",url:"https://pubmed.ncbi.nlm.nih.gov/?term=frozen+shoulder+pathophysiology+inflammation",doi:"10.1302/0301-620X.77B5.7559688"} ]
+  },
+  assessment:{
+    label:"常用评估量表与工具",
+    items:[
+      {name:"肩关节主动/被动 ROM",type:"活动度",note:"记录外旋/外展/前屈，外旋受限是特征"},
+      {name:"ASES 肩功能评分",type:"功能",note:"疼痛+功能综合评分，随访常用"},
+      {name:"NRS / VAS 疼痛（含夜间）",type:"疼痛",note:"夜间痛是本病特点"},
+      {name:"OIS / Constant 肩评分",type:"功能",note:"评估整体肩功能"}
+    ]
+  },
+  intervention:[
+    {category:"运动训练",cls:"cc-exercise",items:[
+      {name:"温和牵伸 + 全范围活动练习",grade:"B",strength:"s-suggest",evidence:"以可耐受、不过度诱发疼痛为原则，循序渐进改善 ROM。系统评价显示运动疗法可改善冻结肩的活动度与功能，且早期结构化运动优于单纯等待或强力被动。",citations:[{title:"Manual therapy and exercise for adhesive capsulitis (frozen shoulder)",meta:"Page MJ 等 · 2014 · Cochrane",journal:"Cochrane Database Syst Rev",if:"7.4",url:"https://pubmed.ncbi.nlm.nih.gov/?term=exercise+adhesive+capsulitis+frozen+shoulder+systematic+review",doi:"10.1002/14651858.CD011275"} ]},
+      {name:"强力 / 暴力拉伸",grade:"C",strength:"s-against",evidence:"可能加重炎症与疼痛，不推荐激进强力的被动拉伸。已有研究提示高张力暴力牵拉可诱发组织炎症与继发活动受限，应避免。",citations:[{title:"Effects of humeral head stabilization intervention during aggressive manual passive stretching for frozen shoulder",meta:"安全性证据 · 2024 · J Shoulder Elbow Surg",journal:"J Shoulder Elbow Surg",if:"3.0",url:"https://pubmed.ncbi.nlm.nih.gov/?term=aggressive+stretching+frozen+shoulder+harm",doi:"10.1016/j.jse.2024.01.048"} ]}
+    ]},
+    {category:"物理因子",cls:"cc-agent",items:[
+      {name:"热疗 / TENS 辅助镇痛",grade:"C",strength:"s-suggest",evidence:"作为牵伸前的放松与镇痛辅助，改善训练耐受。证据有限但可作为对症辅助，不独立改变病程。",citations:[{title:"Physiotherapy interventions for shoulder pain",meta:"Cochrane 系统评价",journal:"Cochrane Database Syst Rev",if:"7.4",url:"https://pubmed.ncbi.nlm.nih.gov/?term=physiotherapy+frozen+shoulder+TENS",doi:"10.1002/14651858.CD004258"} ]},
+      {name:"超声波 / 激光",grade:"D",strength:"s-none",evidence:"证据不足，不推荐作为独立治疗。系统评价未显示超声对冻结肩有优于安慰差别的疗效。",citations:[{title:"Electrotherapy modalities for adhesive capsulitis (frozen shoulder)",meta:"Cochrane 系统评价 · 2014",journal:"Cochrane Database Syst Rev",if:"7.4",url:"https://pubmed.ncbi.nlm.nih.gov/?term=therapeutic+ultrasound+frozen+shoulder+cochrane",doi:"10.1002/14651858.CD011324"} ]}
+    ]},
+    {category:"手法治疗",cls:"cc-manual",items:[
+      {name:"关节松动（Maitland/Mulligan）",grade:"C",strength:"s-suggest",evidence:"改善活动度并减少疼痛，常与家庭训练结合。系统评价提示手法治疗短期联合运动优于单纯运动与否证据不一，宜作为运动训练的辅助成分。",citations:[{title:"Manual therapy and exercise for adhesive capsulitis (frozen shoulder)",meta:"Page MJ 等 · 2014 · Cochrane",journal:"Cochrane Database Syst Rev",if:"7.4",url:"https://pubmed.ncbi.nlm.nih.gov/?term=joint+mobilization+adhesive+capsulitis+systematic+review",doi:"10.1002/14651858.CD011275"} ]}
+    ]},
+    {category:"药物",cls:"cc-drug",items:[
+      {name:"口服镇痛 / NSAIDs",grade:"C",strength:"s-suggest",evidence:"用于急性疼痛期控制症状，非主要治疗手段。可短期减轻疼痛以利康复训练，但缺乏改变病程的证据。",citations:[{title:"Current review of adhesive capsulitis（药物治疗部分）",meta:"临床综述 · 2011",journal:"J Shoulder Elbow Surg",if:"3.0",url:"https://pubmed.ncbi.nlm.nih.gov/?term=frozen+shoulder+oral+analgesia",doi:"10.1016/j.jse.2010.08.023"} ]},
+      {name:"关节腔/囊内类固醇注射",grade:"C",strength:"s-weak",evidence:"早期可短期改善疼痛，对长期 ROM 结局作用有限。系统评价显示关节内类固醇在早期（<6 月）可短期改善 ROM 与疼痛，但维持获益不一致，需影像引导并避免反复注射。",citations:[{title:"Management of adults with primary frozen shoulder in secondary care (UK FROST): a multicentre, pragmatic, three-arm, superiority randomised clinical trial",meta:"Rangan A 等 · 2020 · Lancet",journal:"Lancet",if:"98.4",url:"https://pubmed.ncbi.nlm.nih.gov/?term=corticosteroid+injection+frozen+shoulder+adhesive+capsulitis+meta",doi:"10.1016/S0140-6736(20)31965-6"} ]}
+    ]},
+    {category:"手术",cls:"cc-surgery",items:[
+      {name:"麻醉下手法松解 / 关节镜下粘连松解",grade:"C",strength:"s-suggest",evidence:"仅用于充分保守治疗 6–12 个月仍无明显改善、且功能影响大者。观察性研究与 RCT 显示对难治性病例可改善 ROM，但应作为保守治疗失败的补救选择。",citations:[{title:"Long-Term Outcomes After Arthroscopic Capsular Release for Idiopathic Adhesive Capsulitis",meta:"观察性证据 · J Bone Joint Surg Am",journal:"J Bone Joint Surg Am",if:"5.3",url:"https://pubmed.ncbi.nlm.nih.gov/?term=arthroscopic+release+frozen+shoulder+refractory",doi:"10.2106/JBJS.J.00952"} ]}
+    ]},
+    {category:"患者教育",cls:"cc-edu",items:[
+      {name:"病程管理与夜间痛护理教育",grade:"C",strength:"s-suggest",evidence:"介绍自限性病程、异常睡眠姿势调整与循序渐进训练预期，减少焦虑、提高依从。教育是行为训练成功的必要前提。",citations:[{title:"Frozen Shoulder（患者教育与病程管理）",meta:"Rangan A 等 · 2016 · Shoulder Elbow",journal:"Shoulder Elbow",if:"2.7",url:"https://pubmed.ncbi.nlm.nih.gov/?term=frozen+shoulder+patient+education+adherence",doi:"10.1177/1758573215601779"} ]}
+    ]}
+  ],
+  prognosis:{
+    text:"属自限性疾病，多数患者 1–3 年内逐渐好转；但常留下轻度活动度受限，且恢复期较长。糖尿病与病程越长者恢复愈慢。综合保守治疗可缩短病程、减轻疼痛、改善功能。",
+    citations:[{title:"Long-term outcome of frozen shoulder",meta:"纵向前瞻 · 2008 · J Shoulder Elbow Surg",journal:"J Shoulder Elbow Surg",if:"3.0",url:"https://pubmed.ncbi.nlm.nih.gov/?term=frozen+shoulder+natural+history",doi:"10.1016/j.jse.2007.05.009"} ]}
+},
+
+{
+  id:"nslbp", name:"慢性非特异性下背痛", aliases:["腰背痛","下腰痛","慢性腰痛","lumbago","low back pain","LBP"],
+  tagline:"持续超过12周、无明确特异性病因的下背部疼痛综合征，为全球致残首要原因。",
+  definition:{
+    summary:"疼痛持续超过 12 周、位于肋缘下至臀沟之间，且经评估排除肿瘤、骨折、感染、神经根/椎管特异性病变等明确病因的慢性疼痛综合征。",
+    criteria:"诊断标准：>12 周的下背部疼痛 ＋ 神经体征（反射、肌力、感觉）无明显异常 ＋ 影像与实验室排除红/黄旗（红旗警示：进展性神经功能缺失、马尾综合征、肿瘤病史、发热等转向专科评估）。",
+    citations:[{title:"NICE NG59：成人腰背痛与坐骨神经痛管理指南",meta:"NICE · 2016 · NG59",journal:"NICE Guideline NG59",if:"-",url:"https://www.nice.org.uk/guidance/ng59"} ]},
+  symptoms:{
+    subtitle:">12周 · 机械性背痛 · 常不放射到膝以下",
+    text:"疼痛持续超过 12 周，位于背部中线两侧、肋缘下至臀沟之间；多为「机械性」疼痛——活动/体位改变影响，休息可缓解。疼痛强度波动大，常伴晨僵与活动回避，但无进行性神经功能缺失或红霓征。",
+    points:[
+      {t:"疼痛（机械性）",d:"弯腰、久坐、举物时加重，常伴晨起僵硬与「打软腰」，体位改变可缓解；疼痛可放射至臀部或大腿，但通常不伴明确神经根分布皮节与膝以下放射。",c:[{title:"What low back pain is and why we need to pay attention",meta:"Hartvigsen J 等 · 2018 · Lancet",journal:"Lancet",if:"98.4",url:"https://pubmed.ncbi.nlm.nih.gov/?term=chronic+low+back+pain+clinical+features+review",doi:"10.1016/S0140-6736(18)30480-X"} ]},
+      {t:"功能障碍与活动回避",d:"日常活动（久坐工作、家务、弯腰捡物、驾驶）与工作能力下降；对疼痛的恐惧（kinesiophobia）与灾难化思维促使回避活动，进而导致失用无力—疼痛加重，是慢性化核心环节。",c:[{title:"Fear-avoidance and its consequences in chronic musculoskeletal pain: a state of the art",meta:"Vlaeyen JWS, Linton SJ · 2000 · Pain",journal:"Pain",if:"7.4",url:"https://pubmed.ncbi.nlm.nih.gov/?term=avoidance+behaviour+chronic+low+back+pain",doi:"10.1016/S0304-3959(99)00242-0"}]},
+      {t:"伴随的晨僵与无力",d:"晨起僵硬（常<30 分钟）、下背部酸痛、久坐后起身困难；主观「背无力」或「不稳感」常见，但不一定对应影像学退变程度。",c:[{title:"What low back pain is and why we need to pay attention（临床特征）",meta:"Hartvigsen J 等 · 2018 · Lancet",journal:"Lancet",if:"98.4",url:"https://pubmed.ncbi.nlm.nih.gov/?term=stiffness+instability+low+back+pain",doi:"10.1016/S0140-6736(18)30480-X"}]},
+      {t:"红旗征（警示症状）",d:"出现下肢进行性感觉运动缺失、大小便障碍（马尾症状）、持续发热、不明原因体重下降、肿瘤或外伤史、>50岁新发等「红旗征」时，须立即转诊专科排除急危与特异性病因。",c:[{title:"Red flags to screen for malignancy and fracture in patients with low back pain: systematic review",meta:"Downie A 等 · 2014 · BMJ",journal:"BMJ",if:"105.7",url:"https://pubmed.ncbi.nlm.nih.gov/?term=red+flags+low+back+pain+serious+pathology",doi:"10.1136/bmj.g7"}]}
+    ],
+    citations:[{title:"Prevention and treatment of low back pain: evidence, challenges, and promising directions",meta:"Foster NE 等 · 2018 · Lancet",journal:"Lancet",if:"98.4",url:"https://pubmed.ncbi.nlm.nih.gov/?term=chronic+low+back+pain+review",doi:"10.1016/S0140-6736(18)30489-6"}]
+  },
+  epidemiology:{
+    text:"是全球致残年限（YLD）的首要原因。多数人一生中会经历腰背痛，其中少部分转为慢性；慢性化与心理社会因素（恐惧回避、久坐、低工作满意度）显著相关。",
+    citations:[{title:"Global, regional, and national burden of low back pain, 1990-2020, its attributable risk factors, and projections to 2050: a systematic analysis of the GBD Study 2021",meta:"GBD 2021 LBP Collaborators · 2023 · Lancet Rheumatol",journal:"Lancet Rheumatol",if:"15.6",url:"https://pubmed.ncbi.nlm.nih.gov/?term=global+burden+low+back+pain+GBD",doi:"10.1016/S2665-9913(23)00098-X"} ]},
+  mechanism:{
+    subtitle:"多因素 · 生物-心理-社会模型",
+    text:"多为多因素叠加：肌肉疲劳与失稳、椎间盘与小关节退变、筋膜病变，加上恐惧回避、灾难化等心理社会因素，构成「疼痛-活动回避-失能-再加痛」的负循环，单纯的「结构」解释常不足以说明病理。",
+    points:[
+      {t:"肌肉与运动控制异常",d:"慢性背痛者常见多裂肌萎缩、竖脊肌激活减弱与运动协调异常，使脊柱稳定性下降；疼痛下运动模式改变（保护性僵直）进一步增加负荷。",c:[{title:"Prevention and treatment of low back pain: evidence, challenges, and promising directions（肌肉与运动控制）",meta:"Foster NE 等 · 2018 · Lancet",journal:"Lancet",if:"98.4",url:"https://pubmed.ncbi.nlm.nih.gov/?term=motor+control+paraspinal+muscle+chronic+low+back+pain",doi:"10.1016/S0140-6736(18)30489-6"}]},
+      {t:"生物心理社会模型（BPS）",d:"慢性化很大程度上由心理社会因素驱动——恐惧回避信念、灾难化、消极自我效能、情绪困扰与低工作满意度比组织损伤更能预测致残；这与影像学退变仅弱相关一致。",c:[{title:"What low back pain is and why we need to pay attention（生物心理社会模型）",meta:"Hartvigsen J 等 · 2018 · Lancet",journal:"Lancet",if:"98.4",url:"https://pubmed.ncbi.nlm.nih.gov/?term=biopsychosocial+model+chronic+low+back+pain+disability",doi:"10.1016/S0140-6736(18)30480-X"}]},
+      {t:"疼痛敏化与中枢化",d:"长期疼痛可引发中枢敏化，使痛觉处理增强、疼痛泛化到非机械源；解释部分患者疼痛远超组织损伤，也为运动-认知干预的必要性提供依据。",c:[{title:"Central sensitization: Implications for the diagnosis and treatment of pain",meta:"Woolf CJ · 2011 · Pain",journal:"Pain",if:"7.4",url:"https://pubmed.ncbi.nlm.nih.gov/?term=central+sensitisation+low+back+pain",doi:"10.1016/j.pain.2010.09.030"}]}
+    ],
+    citations:[{title:"Prevention and treatment of low back pain: evidence, challenges, and promising directions（机制综述）",meta:"Foster NE 等 · 2018 · Lancet",journal:"Lancet",if:"98.4",url:"https://pubmed.ncbi.nlm.nih.gov/?term=chronic+low+back+pain+biopsychosocial+mechanisms",doi:"10.1016/S0140-6736(18)30489-6"} ]
+  },
+  assessment:{
+    label:"常用评估量表与工具",
+    items:[
+      {name:"Oswestry 残疾指数（ODI）",type:"功能残疾",note:"评估日常活动受限程度"},
+      {name:"Roland-Morris（RMDQ）",type:"功能残疾",note:"适用于轻度至中度失能"},
+      {name:"NRS / VAS 疼痛",type:"疼痛",note:"当前与平均疼痛强度"},
+      {name:"恐惧-回避信念问卷（FABQ）",type:"心理因素",note:"识别影响预后的信念"},
+      {name:"CORE / 运动控制评估",type:"核心稳定",note:"结合临床评定腰椎稳定性"}
+    ]
+  },
+  intervention:[
+    {category:"运动训练",cls:"cc-exercise",items:[
+      {name:"分级结构化运动训练（核心强化/整体运动）",grade:"A",strength:"s-strong",evidence:"高强度、结构化的运动训练优于被动/不明确治疗。Cochrane 系统评价：运动较不干预显著降低疼痛（平均 −10 分/100）改善功能，效果中等且在随访期维持。",citations:[{title:"Exercise therapy for chronic low back pain",meta:"Hayden JA 等 · 2021 · Cochrane",journal:"Cochrane Database Syst Rev",if:"7.4",url:"https://pubmed.ncbi.nlm.nih.gov/?term=exercise+chronic+non-specific+low+back+pain+cochrane",doi:"10.1002/14651858.CD009790.pub2"} ]},
+      {name:"认知行为/分级活动（强化运动）",grade:"B",strength:"s-weak",evidence:"对伴随恐惧回避者，分级活动+认知重建效果更好。RCT（O'Sullivan 的认知功能疗法等）显示结合认知与行为的干预可改善疼痛与功能，但证据确定性中等。",citations:[{title:"Cognitive functional therapy compared with a group-based exercise and education intervention for patients with chronic low back pain: a randomised controlled trial",meta:"RCT · Br J Sports Med",journal:"Br J Sports Med",if:"18.4",url:"https://pubmed.ncbi.nlm.nih.gov/?term=cognitive+functional+therapy+low+back+pain+RCT",doi:"10.1136/bjsports-2019-100780"} ]}
+    ]},
+    {category:"物理因子",cls:"cc-agent",items:[
+      {name:"热敷（短期）",grade:"C",strength:"s-suggest",evidence:"短期缓解不适，配合运动使用；单独使用获益有限。系统评价显示表层热敷可短期（数天）减轻疼痛，属对症辅助。",citations:[{title:"Superficial heat or cold for low back pain",meta:"Cochrane 系统评价",journal:"Cochrane Database Syst Rev",if:"7.4",url:"https://pubmed.ncbi.nlm.nih.gov/?term=heat+therapy+low+back+pain+cochrane",doi:"10.1002/14651858.CD004750.pub2"} ]},
+      {name:"TENS / 电刺激",grade:"D",strength:"s-none",evidence:"疗效证据不足，不作为常规一线。Cochrane 对 TENS 在慢性背痛的疗效证据质量低，尚不能作出推荐。",citations:[{title:"Transcutaneous electrical nerve stimulation (TENS) versus placebo for chronic low-back pain",meta:"Cochrane 系统评价 · 2008",journal:"Cochrane Database Syst Rev",if:"7.4",url:"https://pubmed.ncbi.nlm.nih.gov/?term=TENS+low+back+pain+cochrane",doi:"10.1002/14651858.CD003008.pub3"} ]},
+      {name:"卧床制动",grade:"B",strength:"s-against",evidence:"慢性腰痛卧床不获益，且可能加重失能；应鼓励尽早恢复活动。系统评价提示卧床与保持活动相比在恢复上更慢，应避免。",citations:[{title:"Bed rest for acute low-back pain and sciatica",meta:"Dahm KT 等 · 2010 · Cochrane",journal:"Cochrane Database Syst Rev",if:"7.4",url:"https://pubmed.ncbi.nlm.nih.gov/?term=bed+rest+low+back+pain+cochrane",doi:"10.1002/14651858.CD001254.pub3"} ]}
+    ]},
+    {category:"手法治疗",cls:"cc-manual",items:[
+      {name:"脊柱操纵/松动（受训治疗师）",grade:"C",strength:"s-suggest",evidence:"短期有效，可作为组合方案的一部分，需筛查红旗征后实施。系统评价显示脊柱操纵对慢性背痛的短期效果中等，未证实优于其他常规有效治疗。",citations:[{title:"Spinal manipulative therapy for chronic low-back pain",meta:"Rubinstein SM 等 · 2011 · Cochrane",journal:"Cochrane Database Syst Rev",if:"7.4",url:"https://pubmed.ncbi.nlm.nih.gov/?term=spinal+manipulation+chronic+low+back+pain+systematic+review",doi:"10.1002/14651858.CD008112.pub2"} ]}
+    ]},
+    {category:"药物",cls:"cc-drug",items:[
+      {name:"NSAIDs（短期）",grade:"A",strength:"s-strong",evidence:"短期止痛有效；评估胃肠/肾脏/心血管风险。Cochrane 显示 NSAIDs 较安慰剂显著降低慢性背痛（SMD −0.4 左右），但获益有限、需权衡副作用。",citations:[{title:"Non-steroidal anti-inflammatory drugs for low-back pain",meta:"Roelofs PD 等 · 2006 · Cochrane",journal:"Cochrane Database Syst Rev",if:"7.4",url:"https://pubmed.ncbi.nlm.nih.gov/?term=NSAIDs+chronic+low+back+pain+cochrane",doi:"10.1002/14651858.CD000396.pub2"} ]},
+      {name:"对乙酰氨基酚",grade:"C",strength:"s-none",evidence:"与安慰剂相比获益不明确，减量使用。RCT 显示对乙酰氨基酚对急性/慢性背痛效果与安慰剂无明显差异，各指南多不推荐作为首选。",citations:[{title:"Efficacy of paracetamol for acute low-back pain: a double-blind, randomised controlled trial",meta:"Williams CM 等（PACE）· 2014 · Lancet",journal:"Lancet",if:"98.4",url:"https://pubmed.ncbi.nlm.nih.gov/?term=paracetamol+low+back+pain+RCT",doi:"10.1016/S0140-6736(14)60805-9"}]},
+      {name:"长期阿片类药物",grade:"C",strength:"s-against",evidence:"长期获益有限且依赖/成瘾风险高，不推荐常规使用。系统评价提示阿片对慢性非癌痛效果中等但长期获益难以持续，副作用与依赖风险大。",citations:[{title:"Opioids for Chronic Noncancer Pain",meta:"JAMA · 2018",journal:"JAMA",if:"120.7",url:"https://pubmed.ncbi.nlm.nih.gov/?term=opioids+chronic+low+back+pain+harms+review",doi:"10.1001/jama.2018.18472"} ]}
+    ]},
+    {category:"手术",cls:"cc-surgery",items:[
+      {name:"针对非特异性下背痛的手术",grade:"B",strength:"s-against",evidence:"无明显结构性/特异性病变时常不优于综合保守治疗，不推荐常规手术。RCT 对比显示对非特异性背痛，手术并不优于结构化康复、且带来手术风险。",citations:[{title:"Randomised controlled trial to compare surgical stabilisation of the lumbar spine with an intensive rehabilitation programme for patients with chronic low back pain: the MRC spine stabilisation trial",meta:"Fairbank J 等（MRC）· 2005 · BMJ",journal:"BMJ",if:"105.7",url:"https://pubmed.ncbi.nlm.nih.gov/?term=surgery+versus+conservative+low+back+pain+RCT",doi:"10.1136/bmj.38441.620417.8f"} ]}
+    ]},
+    {category:"患者教育",cls:"cc-edu",items:[
+      {name:"早期恢复活动 + 认知行为引导",grade:"A",strength:"s-strong",evidence:"纠正「痛就要躺」的错误认知，鼓励尽早安全恢复日常活动与工作，是慢性化预防的核心。NICE 强烈推荐以恢复活动与自我管理为核心的教育与建议。",citations:[{title:"Advice, education and early activity for low back pain",meta:"NICE NG59 · 强推荐",journal:"NICE Guideline NG59",if:"-",url:"https://www.nice.org.uk/guidance/ng59"} ]}
+    ]}
+  ],
+  prognosis:{
+    text:"多数急性背痛在数周内改善，但慢性非特异性背痛复发率高，易波动。积极、分级的运动与活动，配合心理认知管理，是改变预后轨迹的关键；完全无痛或「根治」不现实，管理目标是功能与生活质量。",
+    citations:[{title:"Prognostic factors for pain chronicity in low back pain: a systematic review",meta:"系统评价 · 2021 · PAIN Rep",journal:"PAIN Rep",if:"3.1",url:"https://pubmed.ncbi.nlm.nih.gov/?term=prognosis+chronic+low+back+pain+course",doi:"10.1097/pr9.0000000000000919"} ]}
+},
+
+{
+  id:"rc", name:"肩袖肌腱病", aliases:["肩袖损伤","肩袖肌腱炎","肩峰下撞击综合征","肩袖部分撕裂","rotator cuff tendinopathy","肩袖肌腱病变","冈上肌腱炎"],
+  tagline:"肩袖肌腱因负荷相关退变所致的疼痛与功能障碍，占肩部疾患半数以上，是康复科最常见的肩痛病因之一。",
+  definition:{
+    summary:"指肩袖（冈上肌、冈下肌、肩胛下肌、小圆肌）肌腱因负荷相关退变引起的疼痛与功能障碍综合征，可伴钙化或部分厚度撕裂；肩峰下撞击综合征、肩峰下滑囊病变、肱二头肌长头腱病变亦归入此诊断谱系。全层撕裂不在本条目范围。",
+    criteria:"临床诊断优先于影像：主观评估 + 体格检查组合判断（疼痛弧试验确诊价值最高 LR+3.44；Hawkins-Kennedy 试验排除价值最高 LR−0.25）。不建议常规影像学确诊；保守治疗满 12 周无效者方考虑影像检查，且优先选择超声（诊断特性与 MRI 相当、费用更低）。",
+    citations:[
+      {title:"Rotator Cuff Tendinopathy Diagnosis, Nonsurgical Medical Care, and Rehabilitation: A Clinical Practice Guideline",meta:"Desmeules F 等 · 2025 · 55(4):235-274",journal:"J Orthop Sports Phys Ther",if:"5.3",url:"https://pubmed.ncbi.nlm.nih.gov/?term=Desmeules+rotator+cuff+tendinopathy+clinical+practice+guideline",doi:"10.2519/jospt.2025.13182"}
+    ]
+  },
+  symptoms:{
+    subtitle:"主动抬高触发痛 · 抬臂受限 · 夜间痛",
+    text:"以肩前外侧为主的疼痛与功能障碍为核心：主动抬臂（尤其60°–120°疼痛弧）、外旋抗阻、上举过头动作时诱发或加重；常有夜间痛与应用偏好（过度使用史）。",
+    points:[
+      {t:"疼痛（主动活动触发）",d:"抬臂、举物、过顶运动、梳头穿衣等主动抬举时引发局部疼痛；疼痛弧征（60°–120°外展区间疼痛）为特征性表现，被动活动通常不引发同样的诱发痛。",c:[{title:"The painful arc syndrome. Clinical classification as a guide to management",meta:"Kessel L, Watson M · 1977 · J Bone Joint Surg Br",journal:"J Bone Joint Surg Br",if:"5.3",url:"https://pubmed.ncbi.nlm.nih.gov/?term=painful+arc+rotator+cuff+tendinopathy+diagnosis",doi:"10.1302/0301-620X.59B2.873977"}]},
+      {t:"夜间痛与睡眠障碍",d:"患侧卧位或持续固定姿势时疼痛加剧、常痛醒，夜间痛是肌腱负荷代谢排注不足及炎症激活的常见表现，也是患者就诊主诉之一。",c:[{title:"Nocturnal pain in patients with rotator cuff related shoulder pain: A prospective study",meta:"前瞻研究 · 2022",journal:"Musculoskelet Sci Pract",if:"2.6",url:"https://pubmed.ncbi.nlm.nih.gov/?term=night+pain+rotator+cuff+tendinopathy",doi:"10.1016/j.msksp.2022.102536"}]},
+      {t:"力弱与活动受限",d:"抬臂、外旋抗阻时感力弱无力，举重与过顶动作明显受限；运动控制异常（肩胛胸壁节律紊乱）加剧撞击感，但多数无明显神经根症状。",c:[{title:"The Association of Scapular Kinematics and Glenohumeral Joint Pathologies",meta:"临床研究 · JOSPT 2009",journal:"J Orthop Sports Phys Ther",if:"5.3",url:"https://pubmed.ncbi.nlm.nih.gov/?term=scapular+dyskinesis+rotator+cuff+tendinopathy",doi:"10.2519/jospt.2009.2808"}]},
+      {t:"心理社会相关因素",d:"疼痛恐惧、灾难化与睡眠不足显著关联症状强度与残疾，是预后与康复依从的重要可塑性因素，临床评估应予纳入（与肩袖肌腱病的疼痛神经心理机制一致）。",c:[{title:"The role of psychological factors in the perpetuation of pain intensity and disability in people with shoulder pain: a systematic review",meta:"Martinez-Calderon J 等 · 2018 · BMJ Open",journal:"BMJ Open",if:"2.4",url:"https://pubmed.ncbi.nlm.nih.gov/?term=psychological+factors+rotator+cuff+tendinopathy+disability",doi:"10.1136/bmjopen-2017-020703"}]}
+    ],
+    citations:[{title:"Rotator Cuff Tendinopathy: Navigating the Diagnosis-Management Conundrum",meta:"临床综述 · JOSPT 2015",journal:"J Orthop Sports Phys Ther",if:"5.3",url:"https://pubmed.ncbi.nlm.nih.gov/?term=rotator+cuff+tendinopathy+clinical+presentation+review",doi:"10.2519/jospt.2015.5941"} ]
+  },
+  epidemiology:{
+    text:"肩袖疾患占全部肩部疾病的半数以上，是物理治疗师与基层医生最常见的肩部就诊原因之一。好发于中老年及过顶运动（投掷、游泳、网球）人群；工作中反复抬臂、肩部负荷高的职业人群患病风险显著升高。",
+    citations:[{title:"Prevalence and incidence of shoulder pain in the general population; a systematic review",meta:"Luime JJ 等 · 2003 · Scand J Rheumatol",journal:"Scand J Rheumatol",if:"3.3",url:"https://pubmed.ncbi.nlm.nih.gov/?term=shoulder+pain+prevalence+systematic+review",doi:"10.1080/03009740310004667"}]
+  },
+  mechanism:{
+    subtitle:"负荷相关肌腱退变 · 非单纯炎症",
+    text:"肩袖四肌起于肩胛骨、肌腱汇合止于肱骨大/小结节，核心功能是稳定盂肱关节。肩袖肌腱病本质上是「负荷相关肌腱退变」（tendinosis）：反复或过度负荷导致肌腱结构重塑，并非以炎症细胞浸润为主的「肌腱炎」。",
+    points:[
+      {t:"结构改变（tendinosis）",d:"肌腱胶原纤维失去平行排列、出现断裂与变性，基质蛋白聚糖增多，并有新生血管与神经长入（血管神经化），使肌腱承载能力下降，成为疼痛与撕裂进展的基础。",c:[{title:"Tendinopathy",meta:"Millar NL 等 · 2021 · Nat Rev Dis Primers",journal:"Nat Rev Dis Primers",if:"76.9",url:"https://pubmed.ncbi.nlm.nih.gov/?term=Millar+tendinopathy+Nat+Rev+Dis+Primers",doi:"10.1038/s41572-020-00234-1"}]},
+      {t:"机械力学与撞击因素",d:"肩峰下间隙变窄、肩胛骨运动控制异常等因素使肌腱在抬臂时反复受压摩擦；现代观点认为撞击多与退变并存、互为因果，而非唯一病因，因此治疗重心在负荷管理与运动控制而非单纯「消除撞击」。",c:[{title:"Tendons, ligaments, and capsule of the rotator cuff. Gross and microscopic anatomy",meta:"Clark JM, Harryman DT 2nd · 1992 · J Bone Joint Surg Am",journal:"J Bone Joint Surg Am",if:"5.3",url:"https://pubmed.ncbi.nlm.nih.gov/?term=Clark+tendons+ligaments+capsule+rotator+cuff",doi:"10.2106/00004623-199274050-00010"}]},
+      {t:"疼痛的神经心理机制",d:"疼痛强度与残疾不只源于局部组织：对疼痛的恐惧（kinesiophobia）、灾难化思维、焦虑抑郁等心理社会因素显著相关，高恐惧者疼痛耐受阈值更低。评估与干预均需纳入这些因素。",c:[{title:"The role of psychological factors in the perpetuation of pain intensity and disability in people with shoulder pain: a systematic review",meta:"Martinez-Calderon J 等 · 2018 · BMJ Open",journal:"BMJ Open",if:"2.4",url:"https://pubmed.ncbi.nlm.nih.gov/?term=psychological+factors+rotator+cuff+tendinopathy",doi:"10.1136/bmjopen-2017-020703"}]}
+    ],
+    citations:[{title:"Rotator cuff tendinopathy: a model for the continuum of pathology and related management",meta:"机制综述 · BJSM 2008",journal:"Br J Sports Med",if:"18.4",url:"https://pubmed.ncbi.nlm.nih.gov/?term=rotator+cuff+tendinopathy+mechanism+review",doi:"10.1136/bjsm.2008.054817"}]
+  },
+  assessment:{
+    label:"评估推荐（依据 JOSPT 2025 指南）",
+    items:[
+      {name:"疼痛弧试验（painful arc）",type:"确诊试验",note:"阳性似然比最高（LR+ 3.44，5 项研究 n=964），用于确认"},
+      {name:"Hawkins-Kennedy 试验",type:"排除试验",note:"阴性似然比最低（LR− 0.25，n=962），用于排除"},
+      {name:"3/5 阳性组合试验",type:"组合诊断",note:"H-K/Neer/疼痛弧/Jobe/抗阻外旋≥3 项阳性：LR+ 2.93，LR− 0.34"},
+      {name:"手持测力计肌力测试",type:"肌力",note:"客观等长肌力测定（A 级推荐），优于目测"},
+      {name:"量角器/手机倾角仪",type:"活动度",note:"客观测量主动/被动 ROM（A 级），肩胛动态 ROM 不建议目测"},
+      {name:"患者自评量表（PROM）",type:"功能",note:"SPADI 等信度效度良好的量表评估疼痛与残疾（A 级）"},
+      {name:"红旗征与心理筛查",type:"安全与预后",note:"发热/畸形/神经缺损/肿瘤史需转诊；心理社会因素影响预后"},
+      {name:"超声检查",type:"影像",note:"保守 12 周无效后优先超声：诊断特性≈MRI、费用更低（F 级共识）"}
+    ]
+  },
+  intervention:[
+    {category:"患者教育",cls:"cc-edu",items:[
+      {name:"疾病解释与活动调整教育",grade:"B",strength:"s-weak",evidence:"基于 2022/2025 指南共识：向患者解释「负荷相关退变」病程与良好预后，避免恐病化与影像过度使用；强调逐渐恢复活动而非长期制动，并将心理社会因素纳入治疗选择。",citations:[{title:"Rotator Cuff Tendinopathy CPG 2025（教育推荐）",meta:"Desmeules F 等 · 2025",journal:"J Orthop Sports Phys Ther",if:"5.3",url:"https://pubmed.ncbi.nlm.nih.gov/?term=Desmeules+rotator+cuff+tendinopathy+clinical+practice+guideline",doi:"10.2519/jospt.2025.13182"}]}
+    ]},
+    {category:"运动训练",cls:"cc-exercise",items:[
+      {name:"结构化运动训练（一线核心）",grade:"A",strength:"s-strong",evidence:"运动是肩袖肌腱病的核心治疗。网络荟萃分析显示：中期随访中运动较肩峰下皮质类固醇注射更显著降低疼痛（SMD −0.25，95%CI −0.48~−0.03）。推荐以渐进性抗阻 + 运动控制为主的个体化方案。",citations:[{title:"Rotator Cuff Tendinopathy CPG 2025（运动推荐与网络荟萃分析）",meta:"Desmeules F 等 · 2025 · JOSPT",journal:"J Orthop Sports Phys Ther",if:"5.3",url:"https://pubmed.ncbi.nlm.nih.gov/?term=exercise+versus+corticosteroid+injection+rotator+cuff+tendinopathy",doi:"10.2519/jospt.2025.13182"}]},
+      {name:"运动控制训练（motor control）",grade:"B",strength:"s-weak",evidence:"系统评价（1 项中等 + 4 项低质量研究）：运动控制训练（肩胛胸壁肌群激活、神经肌肉控制、动态稳定）较常规强化训练短期显著降低疼痛（MD −0.79/10，95%CI −1.47~−0.12）与残疾（SMD −0.42，95%CI −0.69~−0.15），中期仍维持。",citations:[{title:"Motor Control Exercises Compared to Strengthening Exercises for Upper- and Lower-Extremity Function in Patients With Rotator Cuff Pathology: A Systematic Review",meta:"系统评价 · Phys Ther 2021",journal:"Phys Ther",if:"3.3",url:"https://pubmed.ncbi.nlm.nih.gov/?term=motor+control+exercise+rotator+cuff+tendinopathy",doi:"10.1093/ptj/pzab072"}]},
+      {name:"离心训练（eccentric）",grade:"B",strength:"s-suggest",evidence:"Lafrance 等系统评价（低置信度 GRADE）：离心训练较其他类型运动（抗阻/活动度）短期与长期均无额外止痛优势，仅中期可能轻微获益（MD −11.9，95%CI −18.2~−5.5；3 项 RCT，n=194）。可作方案组成部分，不作为唯一首选。",citations:[{title:"The effectiveness of eccentric loading exercises in the management of rotator cuff tendinopathy: a systematic review",meta:"系统评价 · Physiotherapy 2019",journal:"Physiotherapy",if:"3.2",url:"https://pubmed.ncbi.nlm.nih.gov/?term=Lafrance+eccentric+exercise+rotator+cuff",doi:"10.1016/j.physio.2018.11.064"}]},
+      {name:"肩胛专项训练（scapula-focused）",grade:"C",strength:"s-suggest",evidence:"系统评价：肩胛专项训练较一般抗阻训练短期无优势（SMD −0.19），中期显著降低疼痛（SMD −0.45，95%CI −0.74~−0.26）与残疾（SMD −0.51）。可作为整体方案一部分，而非孤立治疗。",citations:[{title:"Effectiveness of scapula-focused approaches in patients with rotator cuff related shoulder pain: a systematic review",meta:"系统评价含 Meta · 2016",journal:"Musculoskelet Sci Pract",if:"2.6",url:"https://pubmed.ncbi.nlm.nih.gov/?term=scapula+focused+exercise+rotator+cuff",doi:"10.1016/j.math.2016.05.337"}]}
+    ]},
+    {category:"手法治疗",cls:"cc-manual",items:[
+      {name:"手法治疗（辅助运动）",grade:"C",strength:"s-suggest",evidence:"Desjardins-Charbonneau 等系统评价与 Meta（JOSPT 2015,45:330-350）：手法治疗单用的证据有限，常作为运动训练前的辅助，改善短期疼痛与活动度；不推荐作为独立治疗手段。",citations:[{title:"The Efficacy of Manual Therapy for Rotator Cuff Tendinopathy: A Systematic Review and Meta-Analysis",meta:"Desjardins-Charbonneau A 等 · 2015 · 45:330-350",journal:"J Orthop Sports Phys Ther",if:"5.3",url:"https://pubmed.ncbi.nlm.nih.gov/?term=manual+therapy+rotator+cuff+tendinopathy+systematic+review",doi:"10.2519/jospt.2015.5455"}]}
+    ]},
+    {category:"物理因子",cls:"cc-agent",items:[
+      {name:"冷疗/热疗等物理因子辅助",grade:"D",strength:"s-none",evidence:"急性期（≤12 周）有限证据显示等长运动并不优于冷疗（2 项 RCT，n=63）；多数物理因子（超声、激光等）证据不足，仅作对症辅助，不替代运动训练。",citations:[{title:"Physiotherapy interventions for shoulder pain",meta:"Cochrane 系统评价 · 证据有限",journal:"Cochrane Database Syst Rev",if:"7.4",url:"https://pubmed.ncbi.nlm.nih.gov/?term=physical+agents+rotator+cuff+tendinopathy",doi:"10.1002/14651858.CD004258"}]}
+    ]},
+    {category:"药物",cls:"cc-drug",items:[
+      {name:"对乙酰氨基酚（短期）",grade:"C",strength:"s-suggest",evidence:"指南共识推荐为轻中度肌骨疼痛的一线初始用药（C 级）；但针对肩袖肌腱病本身的疗效证据有限，仅作短期症状管理，需注意剂量与肝毒性。",citations:[{title:"Management of Acute Pain From Non-Low Back, Musculoskeletal Injuries: A Systematic Review and Network Meta-Analysis",meta:"ACP 指南 · 网络荟萃分析 · Ann Intern Med 2020",journal:"Ann Intern Med",if:"39.2",url:"https://pubmed.ncbi.nlm.nih.gov/?term=analgesia+acute+musculoskeletal+pain+network+meta-analysis",doi:"10.7326/M19-3601"}]},
+      {name:"口服 NSAIDs（短期）",grade:"B",strength:"s-weak",evidence:"系统评价（低置信度 GRADE）：口服 NSAIDs 较安慰剂显著降低短期夜间疼痛（MD −0.80/10，95%CI −1.37~−0.23；1 项 RCT，n=365），总体疼痛亦有下降（SMD −0.29，95%CI −0.53~−0.05）。需评估胃肠/心血管风险，短期使用。",citations:[{title:"The efficacy of oral non-steroidal anti-inflammatory drugs for rotator cuff tendinopathy: a systematic review and meta-analysis",meta:"系统评价 · J Rehabil Med 2014",journal:"J Rehabil Med",if:"2.5",url:"https://pubmed.ncbi.nlm.nih.gov/?term=oral+NSAIDs+rotator+cuff+tendinopathy+systematic+review",doi:"10.2340/16501977-1800"}]},
+      {name:"肩峰下皮质类固醇注射",grade:"B",strength:"s-suggest",evidence:"高质量证据：短期（≤8 周）显著减轻疼痛（SMD −0.51，95%CI −1.01~−0.01；7 项 RCT，n=398）与残疾，但中期、长期优势消失（长期 SMD 0.20，无差异）；2 次注射无效不建议第 3 次；超声引导短期略优于徒手定位但临床意义有限。",citations:[{title:"Corticosteroid injections for shoulder pain",meta:"Cochrane 系统评价",journal:"Cochrane Database Syst Rev",if:"7.4",url:"https://pubmed.ncbi.nlm.nih.gov/?term=subacromial+corticosteroid+injection+rotator+cuff+tendinopathy",doi:"10.1002/14651858.CD004016"}]}
+    ]},
+    {category:"手术",cls:"cc-surgery",items:[
+      {name:"肩峰下减压术（不推荐）",grade:"A",strength:"s-against",evidence:"高确定性证据（安慰剂手术对照 RCT + 系统评价）：肩峰下减压术较安慰手术在疼痛与残疾上无临床重要获益，2022 版指南为 A 级（SORT）不推荐用于保守治疗失败的肩袖肌腱病。",citations:[{title:"Subacromial decompression versus diagnostic arthroscopy for shoulder impingement: randomised, placebo surgery controlled clinical trial",meta:"Paavola M 等 · 2018 · 362:k2860",journal:"BMJ",if:"105.7",url:"https://pubmed.ncbi.nlm.nih.gov/?term=Paavola+subacromial+decompression+placebo+surgery+BMJ",doi:"10.1136/bmj.k2860"}]},
+      {name:"12 周无效后的专科转诊",grade:"F",strength:"s-suggest",evidence:"专家意见（F 级）：保守治疗满 12 周仍存在严重、持续疼痛/残疾者，应转诊运动医学医师、康复科医师或骨科医师进一步评估处理。",citations:[{title:"Rotator Cuff Tendinopathy CPG 2025（转诊推荐）",meta:"Desmeules F 等 · 2025",journal:"J Orthop Sports Phys Ther",if:"5.3",url:"https://pubmed.ncbi.nlm.nih.gov/?term=Desmeules+rotator+cuff+tendinopathy+clinical+practice+guideline",doi:"10.2519/jospt.2025.13182"}]}
+    ]}
+  ],
+  prognosis:{
+    text:"多数患者经结构化保守治疗（教育 + 运动为主）在 3–12 个月内改善；病程长、疼痛强度高、心理困扰（焦虑/灾难化/恐惧回避）及工作相关因素是不良预后标志。恢复常需数月，过顶运动者应按分级返回运动计划逐步恢复，避免过早重返。",
+    citations:[{title:"Prognostic Models in Adults Undergoing Physical Therapy for Rotator Cuff Disorders: Systematic Review and Meta-Analysis",meta:"预后系统评价 · Phys Ther 2016",journal:"Phys Ther",if:"3.3",url:"https://pubmed.ncbi.nlm.nih.gov/?term=prognostic+factors+rotator+cuff+tendinopathy",doi:"10.2522/ptj.20150475"}]
+  }
+}
+];
+
+/* ---------------- 工具 ---------------- */
+const $ = s=>document.querySelector(s);
+function norm(v){return (v||"").toLowerCase().replace(/\s+/g,"");}
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));}
+function matchDisease(d,q){
+  q=norm(q); if(!q) return false;
+  if(norm(d.name).includes(q)) return true;
+  return (d.aliases||[]).some(a=>norm(a).includes(q));
+}
+function hl(text,q){
+  if(!q) return esc(text);
+  const idx=norm(text).indexOf(norm(q));
+  if(idx<0) return esc(text);
+  return esc(text.slice(0,idx))+"<em class='em'>"+esc(text.slice(idx,idx+q.length))+"</em>"+esc(text.slice(idx+q.length));
+}
+const STRENGTH = {
+  "s-strong":["强推荐","strong"],"s-weak":["弱推荐","weak"],"s-suggest":["建议 / 可选","suggest"],
+  "s-against":["不推荐","against"],"s-none":["无充分证据","none"]
+};
+const CAT_CLS={运动训练:"cc-exercise",物理因子:"cc-agent",手法治疗:"cc-manual",药物:"cc-drug",手术:"cc-surgery",患者教育:"cc-edu"};
+const SECTION_ORDER=["definition","symptoms","epidemiology","mechanism","assessment","intervention","prognosis"];
+
+/* ---- 证据溯源元数据（每条干预：类型/研究数/样本量/异质性I²）----
+   ★ 演示值：仅用于展示机制，正式上线请以你人工复核的实际文献填写，勿直接引用 */
+const EVIDENCE_META={
+  "任务导向性训练（Task-oriented）":{type:"系统评价/Meta",studies:"18 项",n:"约 1,900",i2:"36%"},
+  "强制性使用运动疗法（CIMT）":{type:"系统评价",studies:"25 项",n:"约 2,000",i2:"52%"},
+  "减重平板步态训练（BWS）":{type:"Cochrane 系统评价",studies:"44 项",n:"约 2,500",i2:"40%"},
+  "功能电刺激（FES）":{type:"观察性研究汇总",studies:"12 项",n:"约 900",i2:">60%"},
+  "经颅直流电刺激（tDCS）":{type:"RCT（质量不一）",studies:"15 项",n:"约 1,100",i2:">70%"},
+  "PNF / 本体感觉神经肌肉促进":{type:"小样本研究",studies:"5 项",n:"约 300",i2:"—"},
+  "急性缺血：静脉溶栓（rt-PA，4.5h 窗）":{type:"指南+RCT",studies:"9 项",n:"约 6,000",i2:"低"},
+  "二级预防：抗血小板+降压+他汀":{type:"指南共识",studies:"多项",n:"—",i2:"低"},
+  "痉挛管理：肉毒毒素注射":{type:"系统评价",studies:"22 项",n:"约 1,700",i2:"45%"},
+  "急性大血管闭塞：机械取栓":{type:"RCT 汇总",studies:"6 项",n:"约 1,500",i2:"低"},
+  "恶性大脑中动脉梗死：开颅减压":{type:"观察性/RCT",studies:"3 项",n:"约 800",i2:"中"},
+  "康复任务训练与自我管理教育":{type:"综述",studies:"多项",n:"—",i2:"—"},
+  "下肢力量 + 有氧运动综合方案":{type:"系统评价/Meta",studies:"54 项",n:"约 6,000",i2:"38%"},
+  "水中训练（Aquatic exercise）":{type:"系统评价",studies:"13 项",n:"约 800",i2:"40%"},
+  "热疗 / 经皮神经电刺激（TENS）":{type:"小样本 RCT",studies:"9 项",n:"约 500",i2:">60%"},
+  "脉冲电磁场 / 超声":{type:"争议性证据",studies:"6 项",n:"约 400",i2:">70%"},
+  "关节松动 + 软组织放松":{type:"综述",studies:"多项",n:"—",i2:"—"},
+  "外用/口服 NSAIDs 短期控制疼痛":{type:"系统评价",studies:"35 项",n:"约 9,000",i2:"中"},
+  "口服对乙酰氨基酚":{type:"RCT",studies:"6 项",n:"约 2,000",i2:"中"},
+  "关节腔注射（糖皮质激素 / 玻璃酸钠）":{type:"系统评价",studies:"38 项",n:"约 7,000",i2:">50%"},
+  "全膝关节置换（终末期）":{type:"队列/登记研究",studies:"多项",n:"—",i2:"—"},
+  "关节镜冲洗清理":{type:"RCT 汇总",studies:"6 项",n:"约 900",i2:"低"},
+  "减重 + 自我管理与运动依从教育":{type:"系统评价",studies:"8 项",n:"约 1,500",i2:"低"},
+  "温和牵伸 + 全范围活动练习":{type:"系统评价",studies:"19 项",n:"约 1,300",i2:"55%"},
+  "强力 / 暴力拉伸":{type:"病例系列/观察",studies:"少",n:"—",i2:"—"},
+  "热疗 / TENS 辅助镇痛":{type:"小样本",studies:"4 项",n:"约 200",i2:"—"},
+  "超声波 / 激光":{type:"证据不足",studies:"3 项",n:"约 150",i2:"—"},
+  "关节松动（Maitland/Mulligan）":{type:"临床研究",studies:"多项",n:"—",i2:"—"},
+  "口服镇痛 / NSAIDs":{type:"症状管理",studies:"少",n:"—",i2:"—"},
+  "关节腔/囊内类固醇注射":{type:"系统评价",studies:"14 项",n:"约 1,000",i2:">60%"},
+  "麻醉下手法松解 / 关节镜下粘连松解":{type:"观察性证据",studies:"多项",n:"—",i2:"—"},
+  "病程管理与夜间痛护理教育":{type:"专家共识/临床经验",studies:"少",n:"—",i2:"—"},
+  "分级结构化运动训练（核心强化/整体运动）":{type:"Cochrane/荟萃",studies:"81 项",n:"约 4,500",i2:"44%"},
+  "认知行为/分级活动（强化运动）":{type:"RCT",studies:"多项",n:"约 2,000",i2:"中"},
+  "热敷（短期）":{type:"小样本",studies:"8 项",n:"约 400",i2:"中"},
+  "TENS / 电刺激":{type:"证据不一",studies:"多项",n:"约 1,000",i2:">65%"},
+  "卧床制动":{type:"RCT/荟萃",studies:"4 项",n:"约 300",i2:"低"},
+  "脊柱操纵/松动（受训治疗师）":{type:"系统评价",studies:"47 项",n:"约 3,000",i2:">50%"},
+  "NSAIDs（短期）":{type:"系统评价",studies:"多项",n:"—",i2:"低"},
+  "对乙酰氨基酚":{type:"RCT",studies:"多项",n:"约 2,000",i2:"中"},
+  "长期阿片类药物":{type:"安全性综述",studies:"多项",n:"—",i2:"—"},
+  "针对非特异性下背痛的手术":{type:"RCT 对比",studies:"多项",n:"约 1,500",i2:"—"},
+  "早期恢复活动 + 认知行为引导":{type:"指南共识",studies:"—",n:"—",i2:"—"},
+  "疾病解释与活动调整教育":{type:"指南共识",studies:"—",n:"—",i2:"—"},
+  "结构化运动训练（一线核心）":{type:"网络荟萃分析",studies:"多项",n:"约 3,000",i2:"中"},
+  "运动控制训练（motor control）":{type:"系统评价/Meta",studies:"5 项",n:"约 323",i2:"低-中"},
+  "离心训练（eccentric）":{type:"系统评价/Meta",studies:"6 项",n:"约 281",i2:"中"},
+  "肩胛专项训练（scapula-focused）":{type:"系统评价/Meta",studies:"4 项",n:"约 150",i2:"低"},
+  "手法治疗（辅助运动）":{type:"系统评价/Meta",studies:"多项",n:"—",i2:"—"},
+  "冷疗/热疗等物理因子辅助":{type:"证据不足",studies:"少",n:"—",i2:"—"},
+  "对乙酰氨基酚（短期）":{type:"网络荟萃分析",studies:"多项",n:"—",i2:"—"},
+  "口服 NSAIDs（短期）":{type:"系统评价",studies:"1-9 项",n:"约 365",i2:"低"},
+  "肩峰下皮质类固醇注射":{type:"系统评价（8 项）",studies:"8 项",n:"约 398",i2:"低-中"},
+  "肩峰下减压术（不推荐）":{type:"RCT（安慰手术对照）",studies:"2 项",n:"约 400",i2:"低"},
+  "12 周无效后的专科转诊":{type:"专家意见",studies:"—",n:"—",i2:"—"}
+};
+
+/* ---------------- 渲染：首页卡片 ---------------- */
+function gradeTag(grade){
+  return "<span class='badge g-"+grade+"'>"+grade+" · "+({A:"高",B:"中",C:"低",D:"极低",E:"理论",F:"专家意见"}[grade])+"</span>";
+}
+function strengthTag(key){
+  const [label]=STRENGTH[key]||[""];
+  return "<span class='badge s-"+key+"'>"+label+"</span>";
+}
+function trace(it){
+  const m=EVIDENCE_META[it.name];
+  if(!m) return "";
+  const i2warn = m.i2 && (m.i2.includes(">") || !isNaN(parseFloat(m.i2)) && parseFloat(m.i2)>=50);
+  return `<div class="trace" title="示例值，正式上线请以人工复核的实际文献为准">
+    <span class="t-k">证据溯源</span>
+    <span class="tg"><span class="t-k">类型</span><span class="t-v">${esc(m.type)}</span></span>
+    <span class="tg"><span class="t-k">纳入研究</span><span class="t-v">${esc(m.studies)}</span></span>
+    <span class="tg"><span class="t-k">总样本</span><span class="t-v">${esc(m.n)}</span></span>
+    <span class="tg"><span class="t-k">异质性 I²</span><span class="t-v ${i2warn?"warn":""}">${esc(m.i2)}</span></span>
+  </div>`;
+}
+function citeBlock(c){
+  if(!c.url && !c.doi) return "";
+  const jf = c.journal ? `<span class="jf">${esc(c.journal)}${c.if?` · <em>IF ${esc(c.if)}</em>`:""}</span>` : "";
+  const doi = c.doi ? `<div class="c-doi"><a class="doi" href="https://doi.org/${esc(c.doi)}" target="_blank" rel="noopener" title="DOI 直达出版社文章主页">DOI ${esc(c.doi)}</a></div>` : "";
+  const href = c.doi ? `https://doi.org/${esc(c.doi)}` : esc(c.url);
+  const linkLabel = c.doi ? "文章主页 ↗" : "原文链接 ↗";
+  return `<div class="cite"><div class="c-txt"><div class="c-title">${esc(c.title)}</div><div class="c-meta">${jf? jf+" · ":""}${esc(c.meta)}</div>${doi}</div><a class="c-link" href="${href}" target="_blank" rel="noopener">${linkLabel}</a></div>`;
+}
+function renderHome(filter){
+  const q=norm(filter||"");
+  $("#countLabel").textContent = filter? ("检索结果 · "+DISEASES.filter(d=>matchDisease(d,q)).length+" 个病种") : ("共 "+DISEASES.length+" 个病种");
+  const grid=$("#grid"); grid.innerHTML="";
+  let shown=0;
+  DISEASES.forEach(d=>{
+    if(q && !matchDisease(d,q)) return;
+    shown++;
+    const visits = d.intervention.reduce((s,g)=>s+g.items.length,0);
+    const card=document.createElement("div");
+    card.className="disease-card";
+    card.innerHTML=
+      "<div class='dc-head'><h3>"+hl(d.name,q)+"</h3><span class='state-dot' title='已收录于循证流程'></span></div>"+
+      "<div class='dc-sub'>"+esc(d.tagline)+"</div>"+
+      "<div class='aliases'>"+d.aliases.slice(0,4).map(a=>"<span class='alias'>"+esc(a)+"</span>").join("")+"</div>"+
+      "<div class='dc-stats'>"+
+        "<div class='stat'><b>"+d.intervention.length+"</b>干预类别</div>"+
+        "<div class='stat'><b>"+visits+"</b>干预条目</div>"+
+        "<div class='stat'><b>"+d.assessment.items.length+"</b>评估工具</div>"+
+      "</div>"+
+      "<div class='dc-go'>查看循证管理方案 →</div>";
+    card.addEventListener("click",()=>openDetail(d.id));
+    grid.appendChild(card);
+  });
+  $("#empty").style.display= shown?"none":"block";
+}
+
+/* ---------------- 渲染：详情 ---------------- */
+function renderDetail(d){
+  const sects=[];
+
+  /* definition */
+  sects.push(`<div class="sec" id="sec-definition">
+    <h3><span class="ic">定</span>定义</h3>
+    <p>${esc(d.definition.summary)}</p>
+    <div class="sub-label">诊断标准</div>
+    <div class="criteria">${esc(d.definition.criteria)}</div>
+    <div class="sub-label">证据依据</div>
+    ${d.definition.citations.map(c=>citeBlock(c)).join("")}
+  </div>`);
+
+  /* symptoms */
+  sects.push(`<div class="sec" id="sec-symptoms">
+    <h3><span class="ic">症</span>症状 / 临床表现 <span style="color:var(--text-muted);font-size:12px;font-weight:400">${esc(d.symptoms.subtitle||"")}</span></h3>
+    ${d.symptoms.text?`<p>${esc(d.symptoms.text)}</p>`:""}
+    ${(d.symptoms.points||[]).map(p=>`
+      <div class="mech-point">
+        <h4>${esc(p.t)}</h4>
+        <p>${esc(p.d)}</p>
+        ${(p.c||[]).map(c=>citeBlock(c)).join("")}
+      </div>`).join("")}
+    ${(d.symptoms.citations||[]).map(c=>citeBlock(c)).join("")}
+  </div>`);
+
+  /* epidemiology */
+  sects.push(`<div class="sec" id="sec-epidemiology">
+    <h3><span class="ic">流</span>流行病学</h3>
+    <p>${esc(d.epidemiology.text)}</p>
+    ${d.epidemiology.citations.map(c=>citeBlock(c)).join("")}
+  </div>`);
+
+  /* mechanism（支持详细分点） */
+  sects.push(`<div class="sec" id="sec-mechanism">
+    <h3><span class="ic">机</span>机制 <span style="color:var(--text-muted);font-size:12px;font-weight:400">${esc(d.mechanism.subtitle||"")}</span></h3>
+    ${d.mechanism.text?`<p>${esc(d.mechanism.text)}</p>`:""}
+    ${(d.mechanism.points||[]).map(p=>`
+      <div class="mech-point">
+        <h4>${esc(p.t)}</h4>
+        <p>${esc(p.d)}</p>
+        ${(p.c||[]).map(c=>citeBlock(c)).join("")}
+      </div>`).join("")}
+    ${(d.mechanism.citations||[]).map(c=>citeBlock(c)).join("")}
+  </div>`);
+
+  /* assessment */
+  sects.push(`<div class="sec" id="sec-assessment">
+    <h3><span class="ic">评</span>评估 <span style="color:var(--text-muted);font-size:12px;font-weight:400">${esc(d.assessment.label||"")}</span></h3>
+    <div class="assess-grid">${d.assessment.items.map(i=>
+      `<div class="assess"><div class="type">${esc(i.type)}</div><b>${esc(i.name)}</b><span>${esc(i.note||"")}</span></div>`).join("")}
+    </div>
+  </div>`);
+
+  /* intervention */
+  const cats=d.intervention.map(g=>{
+    let items=g.items.map(it=>{
+      return `<div class="rec">
+        <div class="r-main">
+          <h4>${esc(it.name)}</h4>
+          ${it.note?`<div class="note">${esc(it.note)}</div>`:""}
+          ${it.evidence?`<div class="ev-detail"><span class="ev-tag">证据详情</span><p>${esc(it.evidence)}</p></div>`:""}
+          ${trace(it)}
+          ${(it.citations||[]).map(c=>citeBlock(c)).join("")}
+        </div>
+        <div class="r-tags">
+          ${gradeTag(it.grade)}${strengthTag(it.strength)}
+        </div>
+      </div>`;
+    }).join("");
+    return `<div style="margin-bottom:14px">
+      <span class="cat-chip ${CAT_CLS[g.category]}">${esc(g.category)}</span>
+      <div style="margin-top:12px">${items}</div>
+    </div>`;
+  }).join("");
+  sects.push(`<div class="sec" id="sec-intervention">
+    <h3><span class="ic">管</span>干预 / 管理 <span style="color:var(--text-muted);font-size:12px;font-weight:400">每条干预：证据等级 + 推荐强度 + 证据溯源 + 原文链接</span></h3>
+    ${cats}
+    <div class="cite-more">说明：证据等级（A/B/C/D）与推荐强度（强推荐/弱推荐/建议/不推荐/无充分证据）含义见右上「证据分级说明」；「证据溯源」中的类型/研究数/样本量/I² 为演示值，正式上线请以人工复核的实际文献为准。</div>
+  </div>`);
+
+  /* prognosis */
+  sects.push(`<div class="sec" id="sec-prognosis">
+    <h3><span class="ic">预</span>预后与随访</h3>
+    <p>${esc(d.prognosis.text)}</p>
+    ${d.prognosis.citations.map(c=>citeBlock(c)).join("")}
+  </div>`);
+
+  /* toc */
+  const toc=[["definition","定义"],["symptoms","症状"],["epidemiology","流行病学"],["mechanism","机制"],["assessment","评估"],["intervention","干预管理"],["prognosis","预后"]]
+    .map(([id,t])=>`<span class="toc-i" data-go="${id}">${t}</span>`).join("");
+
+  $("#detail").innerHTML=`
+    <a class="back" id="backBtn">← 返回病种列表</a>
+    <div class="detail-head">
+      <div class="dh-title"><h1>${esc(d.name)}</h1>
+        ${d.aliases.slice(0,4).map(a=>`<span class="alias" style="font-size:11px;background:var(--line);padding:3px 9px;border-radius:6px;color:var(--text-muted)">${esc(a)}</span>`).join("")}
+      </div>
+      <div class="tagline">${esc(d.tagline)}</div>
+      <div class="dh-toc">${toc}</div>
+    </div>
+    ${sects.join("")}`;
+
+  $("#detail").style.display="block";
+  $("#home").style.display="none";
+  $("#detail").scrollIntoView({block:"start"});
+  $("#backBtn").addEventListener("click",()=>closeDetail());
+  $("#detail").querySelectorAll(".toc-i").forEach(b=>b.addEventListener("click",()=>{
+    const el=$("#"+b.getAttribute("data-go"));
+    if(el) el.scrollIntoView({behavior:"smooth",block:"start"});
+  }));
+}
+function openDetail(id){
+  const d=DISEASES.find(x=>x.id===id); if(!d) return;
+  renderDetail(d);
+  $("#searchInput").value="";
+  hideSuggest();
+}
+function closeDetail(){
+  $("#home").style.display="block";
+  $("#detail").style.display="none"; $("#detail").innerHTML="";
+  window.scrollTo({top:0});
+}
+
+/* ---------------- 搜索 ---------------- */
+function hideSuggest(){$("#suggest").classList.remove("open");}
+function showSuggest(q){
+  const box=$("#suggest");
+  const matches=DISEASES.filter(d=>matchDisease(d,q)).slice(0,6);
+  if(!matches.length){ box.classList.remove("open"); box.innerHTML=""; return; }
+  box.innerHTML=matches.map((d,i)=>`<div class="s-it ${i===0?"sel":""}" data-seld="${d.id}">
+      <span class="th">${d.name}</span>
+      <span class="kw">${esc(d.aliases[0])}</span>
+    </div>`).join("")
+    +`<div class="s-it" data-seld="__none" style="color:var(--text-muted)">↓ 打开病种列表直接浏览</div>`;
+  box.classList.add("open");
+  box.querySelectorAll(".s-it").forEach((it,j)=>it.addEventListener("click",()=>{
+    finish(it.getAttribute("data-seld"));
+  }));
+}
+function finish(sel){
+  if(sel && sel!=="__none"){ openDetail(sel); return; }
+  hideSuggest();
+  renderHome($("#searchInput").value);
+  if(sel==="__none"){ closeDetail(); window.scrollTo({top:0}); }
+}
+const input=$("#searchInput");
+input.addEventListener("input",e=>{
+  const q=e.target.value;
+  if(q.trim()) showSuggest(q); else {hideSuggest(); renderHome("");}
+});
+input.addEventListener("keydown",e=>{
+  if(e.key==="Enter"){
+    const q=e.target.value.trim();
+    hideSuggest();
+    const hit=DISEASES.find(d=>norm(d.name)===norm(q)||(d.aliases||[]).some(a=>norm(a)===norm(q)));
+    if(hit){ openDetail(hit.id); }
+    else{ renderHome(q); }
+  }
+});
+document.addEventListener("click",e=>{ if(!e.target.closest(".search-wrap")) hideSuggest(); });
+
+/* 选文标准弹窗 */
+$("#policyBtn").addEventListener("click",()=>$("#policyModal").classList.add("open"));
+$("#policyClose").addEventListener("click",()=>$("#policyModal").classList.remove("open"));
+$("#policyModal").addEventListener("click",e=>{ if(e.target===e.currentTarget) e.currentTarget.classList.remove("open"); });
+
+/* 证据分级说明弹窗 */
+$("#legendBtn").addEventListener("click",()=>$("#legendModal").classList.add("open"));
+$("#legendClose").addEventListener("click",()=>$("#legendModal").classList.remove("open"));
+$("#legendModal").addEventListener("click",e=>{ if(e.target===e.currentTarget) e.currentTarget.classList.remove("open"); });
+$("#logoBtn").addEventListener("click",()=>{ closeDetail(); renderHome(""); });
+
+/* init */
+renderHome("");
+</script>
+</body>
+</html>
